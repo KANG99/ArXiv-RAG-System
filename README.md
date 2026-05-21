@@ -3,7 +3,7 @@
 创建在ArXiv文档数据基础上，生产级别RAG应用，方便迁移到其他数据项目。
 
 
-## Docker Compose 服务架构文档
+## Docker Compose 服务架构
 
 ### 1. 核心服务
 
