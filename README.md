@@ -5,6 +5,22 @@
 - [Docker Compose服务架构]（）
 - [原始参考项目](https://github.com/jamwithai/production-agentic-rag-course)
 
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    ArXiv-RAG-System                         │
+├─────────────────────────────────────────────────────────────┤
+│  API (8000)  ←→  Redis  ←→  PostgreSQL  ←→  Airflow(8080)   │
+│       ↓                                                     │
+│  OpenSearch(9200)  ←→  Ollama(11434)                        │
+│       ↓                                                     │
+│  OpenSearch Dashboards(5601)                                │
+├─────────────────────────────────────────────────────────────┤
+│                       Langfuse 可观测性                      ｜
+│  Langfuse Web(3001) ←→ Worker(3030) ←→ ClickHouse           │
+│                      ←→ Postgres ←→ Redis ←→ MinIO          │
+└─────────────────────────────────────────────────────────────┘
+```
+
 ## 快速开始
 
 
