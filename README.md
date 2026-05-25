@@ -25,6 +25,7 @@
 │                      ←→ Postgres ←→ Redis ←→ MinIO          │
 └─────────────────────────────────────────────────────────────┘
 ```
+- [源文件结构及层级依赖关系](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/source_dt.md) 
 - 主要完成的工作：
   - 部署升级程序运行环境，将opensearch及airflow从2.x升级到3.x,提升系统安全性和稳定性 。
   - ollama升级为0.24.0，使用qwen3.5:4b模型替代llama3.2:1b，提升模型在中文环境的支持。
