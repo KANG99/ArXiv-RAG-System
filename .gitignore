@@ -217,4 +217,33 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 .DS_Store
-production-agentic-rag-course-main/
+A-production-agentic-rag-course-main/
+.env
+# Docker
+.dockerignore
+
+# Airflow runtime files (generated in airflow/ folder)
+airflow/logs/
+airflow/plugins/
+airflow/airflow.cfg
+airflow/airflow.db*
+airflow/webserver_config.py
+airflow/simple_auth_manager_passwords.json.generated
+
+# Legacy airflow files in project root (if any remain)
+airflow.cfg
+airflow.db*
+simple_auth_manager_passwords.json.generated
+
+# OpenSearch
+opensearch_data/
+
+# Ollama
+ollama_data/
+
+# Data directories
+data/
+
+# Test files and output
+test_output/
+test_data/
