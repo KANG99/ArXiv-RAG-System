@@ -27,7 +27,7 @@ with DAG(
     "arxiv_paper_ingestion",
     default_args=default_args,
     description="Daily arXiv CS.AI paper pipeline: fetch → store to PostgreSQL → chunk & embed → hybrid OpenSearch indexing",
-    schedule="0 6 * * 1-5",  # Monday-Friday at 6 AM Asia/Shanghai time
+    schedule="0 10 * * 1-5",  # Monday-Friday at 10:00:00 AM Asia/Shanghai time
     max_active_runs=1,
     catchup=False,
     tags=["arxiv", "papers", "ingestion", "hybrid-search", "embeddings", "chunks"],

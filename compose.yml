@@ -25,11 +25,11 @@ services:
       - .env
     environment:
       # Container-specific overrides
-      - OPENSEARCH_HOST=${OPENSEARCH_HOST}
-      - OPENSEARCH__HOST=${OPENSEARCH__HOST}
-      - OLLAMA_HOST=${OLLAMA_HOST}
-      - POSTGRES_DATABASE_URL=${POSTGRES_DATABASE_URL}
-      - LANGFUSE_HOST=${LANGFUSE_HOST}
+      - OPENSEARCH_HOST=http://opensearch:9200
+      - OPENSEARCH__HOST=http://opensearch:9200
+      - OLLAMA_HOST=http://ollama:11434
+      - POSTGRES_DATABASE_URL=postgresql+psycopg2://rag_user:rag_password@postgres:5432/rag_db
+      - LANGFUSE_HOST=http://localhost:3001
       - LANGFUSE_DEBUG=true
       - REDIS__HOST=redis
     networks:
@@ -87,7 +87,7 @@ services:
     ports:
       - "5601:5601"
     environment:
-      - OPENSEARCH_HOSTS=${OPENSEARCH_HOST}
+      - OPENSEARCH_HOSTS=http://opensearch:9200
       - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true #3.6.0如果不要开启安全插件，需要设置为true否则无法自动启动
     depends_on:
       - opensearch
@@ -113,20 +113,20 @@ services:
       - .env
     environment:
       # Airflow-specific environment setup
-      - AIRFLOW_HOME=${AIRFLOW__HOME}
-      - PYTHONPATH=${AIRFLOW__HOME}/src
+      - AIRFLOW_HOME=/opt/airflow
+      - PYTHONPATH=/opt/airflow/src
       # Container hostnames for Airflow
-      - POSTGRES_DATABASE_URL=${POSTGRES_DATABASE_URL}
-      - OPENSEARCH_HOST=${OPENSEARCH_HOST}
-      - OPENSEARCH__HOST=${OPENSEARCH__HOST}
-      - OLLAMA_HOST=${OLLAMA_HOST}
+      - POSTGRES_DATABASE_URL=postgresql+psycopg2://rag_user:rag_password@postgres:5432/rag_db
+      - OPENSEARCH_HOST=http://opensearch:9200
+      - OPENSEARCH__HOST=http://opensearch:9200
+      - OLLAMA_HOST=http://ollama:11434
       - REDIS__HOST=redis
     volumes:
-      - ${AIRFLOW_PROJ_DIR:-.}/airflow/dags:${AIRFLOW__HOME}/dags
-      - ${AIRFLOW_PROJ_DIR:-.}/airflow/logs:${AIRFLOW__HOME}/logs
-      - ${AIRFLOW_PROJ_DIR:-.}/airflow/config:${AIRFLOW__HOME}/config
-      - ${AIRFLOW_PROJ_DIR:-.}/airflow/plugins:${AIRFLOW__HOME}/plugins
-      - ./src:${AIRFLOW__HOME}/src
+      - ${AIRFLOW_PROJ_DIR:-.}/airflow/dags:/opt/airflow/dags
+      - ${AIRFLOW_PROJ_DIR:-.}/airflow/logs:/opt/airflow/logs
+      - ${AIRFLOW_PROJ_DIR:-.}/airflow/config:/opt/airflow/config
+      - ${AIRFLOW_PROJ_DIR:-.}/airflow/plugins:/opt/airflow/plugins
+      - ./src:/opt/airflow/src
     ports:
       - "8080:8080"
     # Command handled by entrypoint.sh
@@ -221,7 +221,7 @@ services:
     ports:
       - "3030:3030"
     environment:
-      NEXTAUTH_URL: ${LANGFUSE_HOST}
+      NEXTAUTH_URL: http://localhost:3001
       DATABASE_URL: postgresql://langfuse:langfuse@langfuse-postgres:5432/langfuse
       # Security: Load sensitive values from .env file
       SALT: ${LANGFUSE_SALT}
@@ -272,7 +272,7 @@ services:
       - "3001:3000"
     environment:
       HOSTNAME: 0.0.0.0 # 这个必须设置，否则无法进行healthcheck,因为url会随机生成
-      NEXTAUTH_URL: ${LANGFUSE_HOST}
+      NEXTAUTH_URL: http://localhost:3001
       # Security: Load sensitive values from .env file
       NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET}
       DATABASE_URL: postgresql://langfuse:langfuse@langfuse-postgres:5432/langfuse
