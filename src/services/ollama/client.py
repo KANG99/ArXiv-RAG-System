@@ -194,7 +194,7 @@ class OllamaClient:
         self,
         query: str,
         chunks: List[Dict[str, Any]],
-        model: str = "llama3.2",
+        model: str = "qwen3.5:4b",
         use_structured_output: bool = False,
     ) -> Dict[str, Any]:
         """
@@ -275,7 +275,7 @@ class OllamaClient:
         self,
         query: str,
         chunks: List[Dict[str, Any]],
-        model: str = "llama3.2",
+        model: str = "qwen3.5:4b",
     ):
         """
         Generate a streaming RAG answer using retrieved chunks.
