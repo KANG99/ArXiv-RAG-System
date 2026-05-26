@@ -30,7 +30,7 @@
 
 ### [源文件结构及层级依赖关系](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/source_dt.md)
 #### 根目录
-- config.py：基于`BaseConfigSettings`定义各种客户端类参数配置类，比如`ArxivSettings`,`class PDFParserSettings`类等。定义get_settings()函数，返回Settings对象，里面定义了各种基础参数及客户端类参数配置对象。
+- config.py：基于`BaseConfigSettings`定义各种客户端类参数配置类，比如`ArxivSettings`,`PDFParserSettings`类等。定义get_settings()函数，返回Settings对象，里面定义了各种基础参数及客户端类参数配置对象。
 
 #### services库
 ##### 数据管道（fetch_daily_papers）
