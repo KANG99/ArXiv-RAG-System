@@ -54,8 +54,27 @@
     ```
   - factory.py模块:定义`make_arxiv_client`函数用来创建ArxivClient实例。
 - pdf_parser包：
-  - factory.py模块:定义`make_pdf_parser_service`函数用来创建PDFParserService实例。
-
+  - docling.py模块：创建了`DoclingParser`类，其中`parse_pdf` 方法完成pdf文档解析完整过程，最终返回由章节列表、纯文本内容、PDF解析器标识、元数据构成的PdfContent（考虑到处理时间和内存消耗没有提取图表）。在对PDF进行解析之前会进行多重验证：
+    - 文件是否存在且非空
+    - 文件大小是否超过限制
+    - 文件是否正确的PDF文件（检测文件头是否为PDF）
+    - 文件页数是否超过限制
+    ```python
+    # src/schemas/pdf_parser/models.py
+    class PdfContent(BaseModel):
+      """PDF-specific content extracted by parsers like Docling."""
+  
+      sections: List[PaperSection] = Field(default_factory=list, description="Paper sections")
+      figures: List[PaperFigure] = Field(default_factory=list, description="Figures")
+      tables: List[PaperTable] = Field(default_factory=list, description="Tables")
+      raw_text: str = Field(..., description="Full extracted text")
+      references: List[str] = Field(default_factory=list, description="References")
+      parser_used: ParserType = Field(..., description="Parser used for extraction")
+      metadata: Dict[str, Any] = Field(default_factory=dict, description="Parser metadata")
+    ```
+  
+  - parser.py模块:定义了`PDFParserService`类,用来示例话‘DoclingParser’对象及调用`parse_pdf`方法。
+  - factory.py模块:定义`make_pdf_parser_service`函数创建PDFParserService实例。
 - metadata_fetcher.py模块：通过定义`class MetadataFetcher`类，实现数据爬取、批量下载、文档解析、元数据序列化入库完整流程方法，通过`def make_metadata_fetcher`函数，配置返回 `MetadataFetcher`实例。
 
 ### 本次项目主要完成的工作：
