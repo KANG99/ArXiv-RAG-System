@@ -84,8 +84,6 @@
 - 根据国内办公软件使用情况，将推送消息服务从telegram迁移到企业微信及钉钉，提升实际使用便利性。
 
 ## 快速开始
-
-
 ```bash
 cd ArXiv-RAG-System
 docker compose up -d --remove-orphans
