@@ -18,6 +18,13 @@ logger = logging.getLogger(__name__)
 class ArxivClient:
     """Client for fetching papers from arXiv API."""
 
+    # _instance = None
+    # def __new__(cls, settings: ArxivSettings):
+    #     if cls._instance is None:
+    #         cls._instance = super().__new__(cls)
+    #         cls._instance._initialized = False
+    #     return cls._instance
+
     def __init__(self, settings: ArxivSettings):
         self._settings = settings
         self._last_request_time: Optional[float] = None
@@ -112,8 +119,11 @@ class ArxivClient:
                     await asyncio.sleep(sleep_time)
 
             self._last_request_time = time.time()
-
-            async with httpx.AsyncClient(timeout=self.timeout_seconds) as client:
+            headers = {
+                    # 伪装成 Chrome 浏览器，或者填入你的邮箱声明合规性
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                }
+            async with httpx.AsyncClient(timeout=self.timeout_seconds, headers=headers) as client:
                 response = await client.get(url)
                 response.raise_for_status()
                 xml_data = response.text
@@ -188,7 +198,11 @@ class ArxivClient:
 
             self._last_request_time = time.time()
 
-            async with httpx.AsyncClient(timeout=self.timeout_seconds) as client:
+            headers = {
+                # 伪装成 Chrome 浏览器，或者填入你的邮箱声明合规性
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }   
+            async with httpx.AsyncClient(timeout=self.timeout_seconds, headers=headers) as client:  
                 response = await client.get(url)
                 response.raise_for_status()
                 xml_data = response.text
@@ -226,7 +240,11 @@ class ArxivClient:
         url = f"{self.base_url}?{urlencode(params, quote_via=quote, safe=safe)}"
 
         try:
-            async with httpx.AsyncClient() as client:
+            headers = {
+                # 伪装成 Chrome 浏览器，或者填入你的邮箱声明合规性
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }   
+            async with httpx.AsyncClient(timeout=self.timeout_seconds, headers=headers) as client:  
                 response = await client.get(url)
                 response.raise_for_status()
                 xml_data = response.text

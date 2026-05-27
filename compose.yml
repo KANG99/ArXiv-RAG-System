@@ -122,10 +122,13 @@ services:
       - OLLAMA_HOST=http://ollama:11434
       - REDIS__HOST=redis
     volumes:
+      - airflow_data:/opt/airflow/data
+      - airflow_logs:/opt/airflow/logs
       - ${AIRFLOW_PROJ_DIR:-.}/airflow/dags:/opt/airflow/dags
       - ${AIRFLOW_PROJ_DIR:-.}/airflow/logs:/opt/airflow/logs
       - ${AIRFLOW_PROJ_DIR:-.}/airflow/config:/opt/airflow/config
       - ${AIRFLOW_PROJ_DIR:-.}/airflow/plugins:/opt/airflow/plugins
+      - ${AIRFLOW_PROJ_DIR:-.}/airflow/data:/opt/airflow/data
       - ./src:/opt/airflow/src
     ports:
       - "8080:8080"
@@ -311,7 +314,8 @@ services:
       LANGFUSE_INIT_USER_NAME: "Admin User"
       LANGFUSE_INIT_USER_PASSWORD: "admin123"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/public/health || exit 1"]
+      # test: ["CMD-SHELL", "curl -f http://localhost:3000/api/public/health || exit 1"],环境中不一定已经安装了curl，经常测试为unhealthy
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -387,6 +391,7 @@ volumes:
   opensearch_data:
   ollama_data:
   airflow_logs:
+  airflow_data:
   clickhouse_data:
   redis_data:
   langfuse_v3_postgres_data:
