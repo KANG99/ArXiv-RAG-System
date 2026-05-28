@@ -8,7 +8,7 @@
   - FastAPI 
   - PostgreSQL 17
   - OpenSearch 3.6.0
-  - Apache Airflow 3.2.0
+  - Apache Airflow 3.2.1
   - Ollama 0.24.0
 
 ### [Docker Compose服务架构](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/docker%20compose.md)
@@ -81,8 +81,9 @@
 
 - 完成代码梳理，部署升级程序运行环境，将opensearch及airflow从2.x升级到3.x,提升系统安全性和稳定性 。
 - ollama升级为0.24.0，使用qwen3.5:4b模型替代llama3.2:1b，提升模型在中文环境的支持。
-- 添加docling模型数据持久化，避免重复从hf下载模型。添加pdf数据持久化及卷映射，方便查看原始文档。
 - 根据国内办公软件使用情况，将推送消息服务从telegram迁移到企业微信及钉钉，提升实际使用便利性。
+- **fix**:添加docling模型数据持久化，避免重复从hf下载模型。添加pdf数据持久化及卷映射，方便查看原始文档。
+- **fix**:修复数据管道运行过程中log展示混乱的问题，方便问题排查。
 
 ## 快速开始
 ```bash
