@@ -29,6 +29,7 @@ RUN mkdir -p ${AIRFLOW_HOME} && \
     mkdir -p ${AIRFLOW_HOME}/dags && \
     mkdir -p ${AIRFLOW_HOME}/logs && \
     mkdir -p ${AIRFLOW_HOME}/plugins && \
+    mkdir -p ${AIRFLOW_HOME}/.cache/huggingface && \
     chown -R 50000:50000 ${AIRFLOW_HOME} && \
     chmod -R 755 ${AIRFLOW_HOME}
 
