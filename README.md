@@ -73,9 +73,9 @@
       metadata: Dict[str, Any] = Field(default_factory=dict, description="Parser metadata")
     ```
   
-  - parser.py模块:定义了`PDFParserService`类,用来示例话‘DoclingParser’对象及调用`parse_pdf`方法。
+  - parser.py模块:定义了`PDFParserService`类,用来示例话 `DoclingParser`对象及调用`parse_pdf`方法。
   - factory.py模块:定义`make_pdf_parser_service`函数创建PDFParserService实例。
-- metadata_fetcher.py模块：通过定义`class MetadataFetcher`类，实现数据爬取、批量下载、文档解析、元数据序列化入库完整流程方法，通过`def make_metadata_fetcher`函数，配置返回 `MetadataFetcher`实例。
+- metadata_fetcher.py模块：通过定义`class MetadataFetcher`类，定义了`fetch_and_process_papers`方法实现数据爬取、批量下载、文档解析、元数据序列化入库完整流程方法，通过`def make_metadata_fetcher`函数，配置返回 `MetadataFetcher`实例。
 
 ### 本次项目主要完成的工作：
 
