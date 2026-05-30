@@ -2,13 +2,14 @@ FROM python:3.12-slim
 
 # Set environment variables
 ENV AIRFLOW_HOME=/opt/airflow
-ENV AIRFLOW_VERSION=3.2.0
+ENV AIRFLOW_VERSION=3.2.1
 ENV PYTHON_VERSION=3.12
 ENV CONSTRAINT_URL="https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-${PYTHON_VERSION}.txt"
 
 # Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+    --fix-missing \
         build-essential \
         curl \
         tzdata \
@@ -16,6 +17,8 @@ RUN apt-get update && \
         libpq-dev \
         poppler-utils \
         tesseract-ocr \
+        libgl1 \
+        libglib2.0-0 \
         && rm -rf /var/lib/apt/lists/*
 
 # Create airflow user with UID/GID 50000 for cross-platform compatibility

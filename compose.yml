@@ -122,6 +122,7 @@ services:
       - OLLAMA_HOST=http://ollama:11434
       - REDIS__HOST=redis
     volumes:
+      - docling_model_data:/opt/airflow/.cache/huggingface
       - airflow_data:/opt/airflow/data
       - airflow_logs:/opt/airflow/logs
       - ${AIRFLOW_PROJ_DIR:-.}/airflow/dags:/opt/airflow/dags
@@ -396,6 +397,7 @@ volumes:
   redis_data:
   langfuse_v3_postgres_data:
   langfuse_v3_minio_data:
+  docling_model_data:
 
 networks:
   rag-network:

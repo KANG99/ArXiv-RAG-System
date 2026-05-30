@@ -54,6 +54,7 @@ def fetch_daily_papers(**context):
     else:
         yesterday = datetime.now() - timedelta(days=1)
         target_date = yesterday.strftime("%Y%m%d")
+    target_date = None
 
     logger.info(f"Fetching papers for date: {target_date}")
 

@@ -104,8 +104,9 @@ class DoclingParser:
 
             # Convert PDF using the modern API
             # Limit processing to avoid memory issues with large papers
+            logger.info(f"kang99.Converting PDF {pdf_path} with max_pages={self.max_pages} and max_file_size={self.max_file_size_bytes}")
             result = self._converter.convert(str(pdf_path), max_num_pages=self.max_pages, max_file_size=self.max_file_size_bytes)
-
+            logger.info(f"kang99.Conversion completed for {pdf_path} with {len(result.document.texts)} elements")
             # Extract structured content
             doc = result.document
 
@@ -113,21 +114,31 @@ class DoclingParser:
             sections = []
             current_section = {"title": "Content", "content": ""}
 
-            for element in doc.texts:
-                if hasattr(element, "label") and element.label in ["title", "section_header"]:
-                    # Save previous section if it has content
+            # 适配 2.96.0：使用官方推荐的迭代器遍历元素及其层级
+            for item, level in doc.iterate_items():
+                # 适配 2.96.0：通过新版枚举类型判断这一块是不是大标题或小标题
+                if hasattr(item, "label") and item.label in [DocItemLabel.TITLE, DocItemLabel.SECTION_HEADER]:
+                    
+                    # 如果上一个章节已经攒了正文，先打包归档
                     if current_section["content"].strip():
-                        sections.append(PaperSection(title=current_section["title"], content=current_section["content"].strip()))
-                    # Start new section
-                    current_section = {"title": element.text.strip(), "content": ""}
+                        sections.append(PaperSection(
+                            title=current_section["title"], 
+                            content=current_section["content"].strip()
+                        ))
+                        
+                    # 清空临时容器，将当前发现的这行字设为新章节的标题
+                    current_section = {"title": item.text.strip(), "content": ""}
                 else:
-                    # Add content to current section
-                    if hasattr(element, "text") and element.text:
-                        current_section["content"] += element.text + "\n"
+                    # 普通正文元素（段落、列表、表格文字等），源源不断追加到当前章节
+                    if hasattr(item, "text") and item.text.strip():
+                        current_section["content"] += item.text + "\n"
 
-            # Add final section
+            # 循环结束后，把最后一个章节打包收尾
             if current_section["content"].strip():
-                sections.append(PaperSection(title=current_section["title"], content=current_section["content"].strip()))
+                sections.append(PaperSection(
+                    title=current_section["title"], 
+                    content=current_section["content"].strip()
+                ))
 
             # Focus on what arXiv API doesn't provide: structured full text content only
             return PdfContent(

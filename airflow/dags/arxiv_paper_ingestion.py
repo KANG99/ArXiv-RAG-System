@@ -18,7 +18,7 @@ default_args = {
     "email_on_failure": False,
     "email_on_retry": False,
     "retries": 2,
-    "retry_delay": timedelta(minutes=30),
+    "retry_delay": timedelta(minutes=1),
     "catchup": False,
 }
 
@@ -44,29 +44,29 @@ with DAG(
         python_callable=fetch_daily_papers,
     )
 
-    # # Hybrid search indexing task (replaces old OpenSearch task)
-    # index_hybrid_task = PythonOperator(
-    #     task_id="index_papers_hybrid",
-    #     python_callable=index_papers_hybrid,
+    # Hybrid search indexing task (replaces old OpenSearch task)
+    index_hybrid_task = PythonOperator(
+        task_id="index_papers_hybrid",
+        python_callable=index_papers_hybrid,
 
-    # )
+    )
 
-    # report_task = PythonOperator(
-    #     task_id="generate_daily_report",
-    #     python_callable=generate_daily_report,
-    # )
+    report_task = PythonOperator(
+        task_id="generate_daily_report",
+        python_callable=generate_daily_report,
+    )
 
-    # cleanup_task = BashOperator(
-    #     task_id="cleanup_temp_files",
-    #     bash_command="""
-    #     echo "Cleaning up temporary files..."
-    #     # Remove PDFs older than 30 days to manage disk space
-    #     find /tmp -name "*.pdf" -type f -mtime +30 -delete 2>/dev/null || true
-    #     echo "Cleanup completed"
-    #     """,
+    cleanup_task = BashOperator(
+        task_id="cleanup_temp_files",
+        bash_command="""
+        echo "Cleaning up temporary files..."
+        # Remove PDFs older than 30 days to manage disk space
+        find /tmp -name "*.pdf" -type f -mtime +30 -delete 2>/dev/null || true
+        echo "Cleanup completed"
+        """,
                     
-    # )
+    )
 
     # Task dependencies
     # Simplified pipeline: setup -> fetch -> hybrid index -> report -> cleanup
-    setup_task >> fetch_task #>> index_hybrid_task >> report_task >> cleanup_task
+    setup_task >> fetch_task >> index_hybrid_task >> report_task >> cleanup_task
