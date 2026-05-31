@@ -3,6 +3,7 @@
 ## 内容预览
 
 创建在ArXiv文档数据基础上，生产级别RAG应用，方便迁移到其他数据项目。本项目是对其他开源项目的二次开发，[原始参考项目地址](https://github.com/jamwithai/production-agentic-rag-course)。
+
 <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/telegram_and_agentic_ai.png width=440 height=400 title=“图片来源：production-agentic-rag-course”>
 
 ### [完整生产级技术栈](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/production%20tech%20stack.md)
