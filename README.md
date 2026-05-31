@@ -37,7 +37,7 @@
 ##### airflow dag任务
 
 - [fetch_daily_papers](https://github.com/KANG99/ArXiv-RAG-System/blob/main/airflow/dags/arxiv_ingestion/fetching.py)：arxiv论文数据抓取、下载、docling文本解析解析、postgres sql数据入库。
-- [index_papers_hybrid]()：获取近期存储在postgres的论文内容，按论文章节拆分文本片段，利用Jina AI做embedding。把拆分好的文本片段和它对应的向量数据，一起上传到 OpenSearch，让系统做好分类、归档，后续能快速检索匹配内容。
+- [index_papers_hybrid](https://github.com/KANG99/ArXiv-RAG-System/blob/main/airflow/dags/arxiv_ingestion/indexing.py)：获取近期存储在postgres的论文内容，按论文章节拆分文本片段，利用Jina AI做embedding。把拆分好的文本片段和它对应的向量数据，一起上传到 OpenSearch，让系统做好分类、归档，后续能快速检索匹配内容。
 
 #####  src根目录
 
