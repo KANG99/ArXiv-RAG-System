@@ -30,13 +30,15 @@
 
 ### [源文件结构及层级依赖关系](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/source_dt.md)
 
-#### 根目录
+#### 数据管道相关（由函数[fetch_daily_papers](https://github.com/KANG99/ArXiv-RAG-System/blob/main/airflow/dags/arxiv_ingestion/fetching.py)最终实现）
+
+#####  src根目录
+
 - config.py：基于`BaseConfigSettings`定义各种客户端类参数配置类，比如`ArxivSettings`,`PDFParserSettings`类等。定义get_settings()函数，返回Settings对象，里面定义了各种基础参数及客户端类参数配置对象。
 - models包里面的`paper.py`模块定义了论文数据在 PostgreSQL 中的存储结构的SQLAlchemy 数据库模型。
+- repositories包里面的`paper.py`模块定义了`PaperRepository`类，实现了用于数据库数据增加、更新、查询等操作的方法。
 
-#### services库
-
-##### 数据管道相关（由函数[fetch_daily_papers](https://github.com/KANG99/ArXiv-RAG-System/blob/main/airflow/dags/arxiv_ingestion/fetching.py)最终实现）
+#####  services库
 
 - arxiv包：
   - client.py模块：定义arxiv论文爬虫客户端`ArxivClient`类，该类定义了爬取论文查询页面、解析查询页面、下载论文方法。爬取网页过程中添加了频率限制及错误重试机制。通过解析网页方法，提取查询到的论文标题、url等网页内容，返回`ArxivPaper`对象列表或者单个对象。下载论文的方法通过提取到的论文url将论文保存成PDF格式文档。
