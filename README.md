@@ -37,6 +37,23 @@
 ##### airflow dag任务
 
 - [fetch_daily_papers](https://github.com/KANG99/ArXiv-RAG-System/blob/main/airflow/dags/arxiv_ingestion/fetching.py)：arxiv论文数据抓取、下载、docling文本解析解析、postgresql数据入库。
+
+```
+fetch_daily_papers (上游任务)
+    │  results = {
+    │      "papers_fetched": 15,
+    │      "papers_stored": 12,
+    │      "date": "20260531",
+    │      ...
+    │  }
+    │  ti.xcom_push(key="fetch_results",value=results)
+    │      ↓
+    │  [XCom 存储]
+    │      ↓
+    │  ti.xcom_pull(task_ids="fetch_daily_papers", key="fetch_results")
+index_papers_hybrid (下游任务)
+```
+
 - [index_papers_hybrid](https://github.com/KANG99/ArXiv-RAG-System/blob/main/airflow/dags/arxiv_ingestion/indexing.py)：获取近期存储在postgres的论文内容，按论文章节拆分文本片段，利用Jina AI做embedding。把拆分好的文本片段和它对应的向量数据，一起上传到 OpenSearch，让系统做好分类、归档，后续能快速检索匹配内容。
 
 #####  src根目录
@@ -86,6 +103,20 @@
   - parser.py模块:定义了`PDFParserService`类,用来示例话 `DoclingParser`对象及调用`parse_pdf`方法。
   - factory.py模块:定义`make_pdf_parser_service`函数创建PDFParserService实例。
 - metadata_fetcher.py模块：通过定义`class MetadataFetcher`类，定义了`fetch_and_process_papers`方法实现数据爬取、批量下载、文档解析、元数据序列化入库完整流程方法，通过`def make_metadata_fetcher`函数，配置返回 `MetadataFetcher`实例。
+
+- indexing包：
+  - text_chunker.py模块
+  - hybrid_indexer.py模块
+  - factory.py模块
+
+- opensearch包：
+  - client.py模块:定义了`OpenSearchClient`类，是一个统一的 OpenSearch 客户端封装类。负责管理与 OpenSearch 服务器的连接，提供索引管理能力。支持多种索引搜索模式（BM25、向量、混合），处理文档的增删改查操作。
+  - index_config_hybrid.py模块：定义 `ARXIV_PAPERS_CHUNKS_MAPPING`产级的混合搜索索引配置。同时支持 BM25 关键词搜索和 HNSW 向量搜索，针对英文文本优化的分析器配置，防止字段污染和意外数据类型导致的搜索错误。与 RRF 管道配合使用，实现混合搜索。
+  - factory.py模块：定义`make_opensearch_client`函数用来创建OpenSearchClient单一实例。要使用多实例时候，使用`make_opensearch_client_fresh`函数创建新的实例。
+
+- embedding包：
+  - jina_client.py模块
+  - factory.py模块
 
 ### 本次项目主要完成的工作：
 
