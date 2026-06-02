@@ -1,0 +1,16 @@
+from typing import List
+
+from pydantic import BaseModel
+
+
+class OllamaEmbeddingRequest(BaseModel):
+    """Request model for Ollama embeddings API."""
+
+    model: str
+    input: str
+
+
+class OllamaEmbeddingResponse(BaseModel):
+    """Response model from Ollama embeddings API."""
+
+    embedding: List[float]

@@ -151,6 +151,8 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     deploy:
       resources:
         limits:

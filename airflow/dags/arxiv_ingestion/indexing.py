@@ -1,6 +1,8 @@
 import asyncio
 import logging
 from datetime import datetime, timedelta, timezone
+# import sys
+# sys.path.append('~/Desktop/learning/ArXiv-RAG-System/')
 
 from src.db.factory import make_database
 from src.services.indexing.factory import make_hybrid_indexing_service
@@ -123,3 +125,12 @@ def verify_hybrid_index(**context):
     except Exception as e:
         logger.error(f"Failed to verify hybrid index: {e}")
         raise
+
+# 添加到文件末尾
+if __name__ == "__main__":
+    # 模拟 Airflow context（ti 为 None，走默认分支）
+    mock_context = {"ti": None}
+    
+    # 运行任务（可以在这里设置断点）
+    result = index_papers_hybrid(**mock_context)
+    print("Indexing result:", result)
