@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from datetime import datetime, timedelta, timezone
+from functools import lru_cache
 # import sys
 # sys.path.append('~/Desktop/learning/ArXiv-RAG-System/')
 
@@ -37,6 +38,10 @@ async def _index_papers_with_chunks(papers):
 
     return stats
 
+@lru_cache(maxsize=1)
+def get_database():
+    return make_database()
+
 
 def index_papers_hybrid(**context):
     """Index papers with chunking and vector embeddings for hybrid search.
@@ -48,7 +53,7 @@ def index_papers_hybrid(**context):
     4. Indexes chunks with embeddings into OpenSearch
     """
     try:
-        database = make_database()
+        database = get_database()
 
         ti = context.get("ti")
 

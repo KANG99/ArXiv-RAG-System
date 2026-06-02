@@ -16,6 +16,8 @@
 - **fix**:添加docling模型数据持久化，避免重复从hf下载模型。添加pdf数据持久化及卷映射，方便查看原始文档。
 - **fix**:dockerfile添加部分安装依赖，比如`libgl1`,`libglib2.0-0`,`tzdata`等，设置时区，消除对OpenGL的依赖问题等。
 - **fix**:修复原始parser.py模块误用await导致程序报错的bug。
+- **fix**:删除原是项目中src文件夹下没有被调用的创建数据库单例的database.py模块。
+- **fix**:dags/arxiv_ingestion/indexing.py模块使用使@lru_cache 复用数据库连接池，避免重复创建和销毁的开销。
 
 ## 内容概览
 
