@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, List, Optional
 
-from src.services.embeddings.qwen_client import QwenEmbeddingsClient
+from src.services.embeddings.embed_client import EmbeddingsClient
 from src.services.opensearch.client import OpenSearchClient
 
 from .text_chunker import TextChunker
@@ -18,7 +18,7 @@ class HybridIndexingService:
     3. Indexing chunks with embeddings into OpenSearch
     """
 
-    def __init__(self, chunker: TextChunker, embeddings_client: QwenEmbeddingsClient, opensearch_client: OpenSearchClient):
+    def __init__(self, chunker: TextChunker, embeddings_client: EmbeddingsClient, opensearch_client: OpenSearchClient):
         """Initialize hybrid indexing service.
 
         :param chunker: Text chunking service
@@ -63,6 +63,7 @@ class HybridIndexingService:
 
             # Step 2: Generate embeddings for chunks
             chunk_texts = [chunk.text for chunk in chunks]
+            logging.info(f"start embedding by {self.embeddings_client.model}……")
             embeddings = await self.embeddings_client.embed_passages(
                 texts=chunk_texts,
                 batch_size=50,  # Process in batches

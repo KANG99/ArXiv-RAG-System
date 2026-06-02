@@ -3,18 +3,19 @@ from typing import List
 
 import httpx
 from src.schemas.embeddings.jina import JinaEmbeddingRequest, JinaEmbeddingResponse
+from src.services.embeddings.embed_client import EmbeddingsClient
 
 logger = logging.getLogger(__name__)
 
 
-class JinaEmbeddingsClient:
+class JinaEmbeddingsClient(EmbeddingsClient):
     """Client for Jina AI embeddings API.
 
     Uses Jina embeddings v3 model with 1024 dimensions optimized for retrieval.
     Documentation: https://jina.ai/embeddings
     """
 
-    def __init__(self, api_key: str, base_url: str = "https://api.jina.ai/v1"):
+    def __init__(self, api_key: str, base_url: str = "https://api.jina.ai/v1", model: str = "jina-embeddings-v3"):
         """Initialize Jina embeddings client.
 
         :param api_key: Jina API key
@@ -22,12 +23,20 @@ class JinaEmbeddingsClient:
         """
         self.api_key = api_key
         self.base_url = base_url
+        self.model = model
         self.headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
         }
         self.client = httpx.AsyncClient(timeout=30.0)
         logger.info("Jina embeddings client initialized")
+
+    @staticmethod
+    def satisfies_contract(contract: str):
+        """Check if the client satisfies the contract."""
+        if contract != "Jina":
+            return False
+        return True
 
     async def embed_passages(self, texts: List[str], batch_size: int = 100) -> List[List[float]]:
         """Embed text passages for indexing.
@@ -73,7 +82,7 @@ class JinaEmbeddingsClient:
         :param query: Query text to embed
         :returns: Embedding vector for the query
         """
-        request_data = JinaEmbeddingRequest(model="jina-embeddings-v3", task="retrieval.query", dimensions=1024, input=[query])
+        request_data = JinaEmbeddingRequest(model=self.model, task="retrieval.query", dimensions=1024, input=[query])
 
         try:
             response = await self.client.post(f"{self.base_url}/embeddings", headers=self.headers, json=request_data.model_dump())
@@ -95,11 +104,3 @@ class JinaEmbeddingsClient:
     async def close(self):
         """Close the HTTP client."""
         await self.client.aclose()
-
-    async def __aenter__(self):
-        """Async context manager entry."""
-        return self
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Async context manager exit."""
-        await self.close()

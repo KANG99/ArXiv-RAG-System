@@ -170,12 +170,14 @@ class Settings(BaseConfigSettings):
     postgres_pool_size: int = 20
     postgres_max_overflow: int = 0
 
-    ollama_host: str = "http://localhost:11434"
+    ollama_host: str = "http://ollama:11434"
     ollama_model: str = "qwen3.5:4b"
     ollama_timeout: int = 300
 
     # Jina AI embeddings configuration
     jina_api_key: str = ""
+    # online of offline embedding contract
+    embedding_contract: str = "Qwen"
 
     arxiv: ArxivSettings = Field(default_factory=ArxivSettings)
     pdf_parser: PDFParserSettings = Field(default_factory=PDFParserSettings)

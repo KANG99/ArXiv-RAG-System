@@ -9,20 +9,21 @@ from typing import List
 
 import httpx
 from src.schemas.embeddings.ollama import OllamaEmbeddingRequest, OllamaEmbeddingResponse
+from src.services.embeddings.embed_client import EmbeddingsClient
 
 logger = logging.getLogger(__name__)
 
 
-class QwenEmbeddingsClient:
+class QwenEmbeddingsClient(EmbeddingsClient):
     """Client for Ollama Qwen embeddings.
 
     Uses Qwen3-Embedding-0.6B model running locally via Ollama.
     Documentation: https://ollama.com/library/qwen3-embedding
     """
 
-    def __init__(self, base_url: str = "http://ollama:11434", model: str = "qwen3-embedding:0.6b", api_key: str = None):
+    def __init__(self, api_key: str = None, base_url: str = "http://ollama:11434", model: str = "qwen3-embedding:0.6b"):
         """Initialize Qwen embeddings client.
-
+        :param api_key: Ollama no required
         :param base_url: Ollama API base URL
         :param model: Model name to use for embeddings
         """
@@ -31,7 +32,14 @@ class QwenEmbeddingsClient:
         self.client = httpx.AsyncClient(timeout=60.0)
         logger.info(f"Qwen embeddings client initialized with model: {model}")
 
-    async def embed_passages(self, texts: List[str], batch_size: int = 2) -> List[List[float]]:
+    @staticmethod
+    def satisfies_contract(contract: str):
+        """Check if the client satisfies the contract."""
+        if contract != "Qwen":
+            return False
+        return True
+
+    async def embed_passages(self, texts: List[str], batch_size: int = 5) -> List[List[float]]:
         """Embed text passages for indexing.
 
         :param texts: List of text passages to embed
@@ -95,14 +103,6 @@ class QwenEmbeddingsClient:
     async def close(self):
         """Close the HTTP client."""
         await self.client.aclose()
-
-    async def __aenter__(self):
-        """Async context manager entry."""
-        return self
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Async context manager exit."""
-        await self.close()
 
 if __name__ == "__main__":
     client = QwenEmbeddingsClient()

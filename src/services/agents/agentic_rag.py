@@ -7,7 +7,7 @@ from langfuse.langchain import CallbackHandler
 from langgraph.graph import END, START, StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
 
-from src.services.embeddings.qwen_client import QwenEmbeddingsClient
+from src.services.embeddings.embed_client import EmbeddingsClient
 from src.services.langfuse.client import LangfuseTracer
 from src.services.ollama.client import OllamaClient
 from src.services.opensearch.client import OpenSearchClient
@@ -43,7 +43,7 @@ class AgenticRAGService:
         self,
         opensearch_client: OpenSearchClient,
         ollama_client: OllamaClient,
-        embeddings_client: QwenEmbeddingsClient,
+        embeddings_client: EmbeddingsClient,
         langfuse_tracer: Optional[LangfuseTracer] = None,
         graph_config: Optional[GraphConfig] = None,
     ):

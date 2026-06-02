@@ -1,6 +1,6 @@
 from typing import Optional
 
-from src.services.embeddings.qwen_client import QwenEmbeddingsClient
+from src.services.embeddings.embed_client import EmbeddingsClient
 from src.services.langfuse.client import LangfuseTracer
 from src.services.ollama.client import OllamaClient
 from src.services.opensearch.client import OpenSearchClient
@@ -12,7 +12,7 @@ from .config import GraphConfig
 def make_agentic_rag_service(
     opensearch_client: OpenSearchClient,
     ollama_client: OllamaClient,
-    embeddings_client: QwenEmbeddingsClient,
+    embeddings_client: EmbeddingsClient,
     langfuse_tracer: Optional[LangfuseTracer] = None,
     top_k: int = 3,
     use_hybrid: bool = True,

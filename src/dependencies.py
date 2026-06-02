@@ -15,7 +15,7 @@ from src.config import Settings
 from src.db.interfaces.base import BaseDatabase
 from src.services.arxiv.client import ArxivClient
 from src.services.cache.client import CacheClient
-from src.services.embeddings.qwen_client import QwenEmbeddingsClient
+from src.services.embeddings.embed_client import EmbeddingsClient
 from src.services.langfuse.client import LangfuseTracer
 from src.services.ollama.client import OllamaClient
 from src.services.opensearch.client import OpenSearchClient
@@ -62,7 +62,7 @@ def get_pdf_parser(request: Request) -> PDFParserService:
     return request.app.state.pdf_parser
 
 
-def get_embeddings_service(request: Request) -> QwenEmbeddingsClient:
+def get_embeddings_service(request: Request) -> EmbeddingsClient:
     """Get embeddings service from the request state."""
     return request.app.state.embeddings_service
 
@@ -94,7 +94,7 @@ SessionDep = Annotated[Session, Depends(get_db_session)]
 OpenSearchDep = Annotated[OpenSearchClient, Depends(get_opensearch_client)]
 ArxivDep = Annotated[ArxivClient, Depends(get_arxiv_client)]
 PDFParserDep = Annotated[PDFParserService, Depends(get_pdf_parser)]
-EmbeddingsDep = Annotated[QwenEmbeddingsClient, Depends(get_embeddings_service)]
+EmbeddingsDep = Annotated[EmbeddingsClient, Depends(get_embeddings_service)]
 OllamaDep = Annotated[OllamaClient, Depends(get_ollama_client)]
 LangfuseDep = Annotated[LangfuseTracer, Depends(get_langfuse_tracer)]
 CacheDep = Annotated[CacheClient | None, Depends(get_cache_client)]

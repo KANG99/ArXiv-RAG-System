@@ -3,7 +3,8 @@ import logging
 from langchain_core.documents import Document
 from langchain_core.tools import tool
 
-from src.services.embeddings.qwen_client import QwenEmbeddingsClient
+# from src.services.embeddings.qwen_client import QwenEmbeddingsClient
+from src.services.embeddings.embed_client import EmbeddingsClient
 from src.services.opensearch.client import OpenSearchClient
 
 logger = logging.getLogger(__name__)
@@ -11,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 def create_retriever_tool(
     opensearch_client: OpenSearchClient,
-    embeddings_client: QwenEmbeddingsClient,
+    embeddings_client: EmbeddingsClient,
     top_k: int = 3,
     use_hybrid: bool = True,
 ):
