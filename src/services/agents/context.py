@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from langfuse._client.span import LangfuseSpan
 from typing import TYPE_CHECKING, Optional
 
-from src.services.embeddings.jina_client import JinaEmbeddingsClient
+from src.services.embeddings.qwen_client import QwenEmbeddingsClient
 from src.services.langfuse.client import LangfuseTracer
 from src.services.ollama.client import OllamaClient
 from src.services.opensearch.client import OpenSearchClient
@@ -29,7 +29,7 @@ class Context:
 
     ollama_client: OllamaClient
     opensearch_client: OpenSearchClient
-    embeddings_client: JinaEmbeddingsClient
+    embeddings_client: QwenEmbeddingsClient
     langfuse_tracer: Optional[LangfuseTracer]
     trace: Optional["LangfuseSpan"] = None
     langfuse_enabled: bool = False
