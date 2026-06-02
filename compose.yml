@@ -89,6 +89,9 @@ services:
     environment:
       - OPENSEARCH_HOSTS=http://opensearch:9200
       - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true #3.6.0如果不要开启安全插件，需要设置为true否则无法自动启动
+      - DATA_SOURCE_ENABLED=true #3.6.0新功能允许你跨多个数据源进行检索，并激活高级分析控制台。
+      - WORKSPACE_ENABLED=true
+      - EXPLORE_ENABLED=true
     depends_on:
       - opensearch
     healthcheck:

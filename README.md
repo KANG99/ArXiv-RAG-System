@@ -18,6 +18,7 @@
 - **fix**:修复原始parser.py模块误用await导致程序报错的bug。
 - **fix**:删除原是项目中src文件夹下没有被调用的创建数据库单例的database.py模块。
 - **fix**:dags/arxiv_ingestion/indexing.py模块使用使@lru_cache 复用数据库连接池，避免重复创建和销毁的开销。
+- **fix**:修复text_chunker.py模块中114行调用_reconstruct_text传入参数错误的bug.
 
 ## 内容概览
 
@@ -120,15 +121,25 @@ index_papers_hybrid (下游任务)
 - metadata_fetcher.py模块：通过定义`class MetadataFetcher`类，定义了`fetch_and_process_papers`方法实现数据爬取、批量下载、文档解析、元数据序列化入库完整流程方法，通过`def make_metadata_fetcher`函数，配置返回 `MetadataFetcher`实例。
 
 - indexing包：
-  - text_chunker.py模块
+  - text_chunker.py模块：定义Text,提供文本重叠分段处理服务。采用基于单词的分段方式，分段长度与重叠区间可自定义配置。默认配置：单段 600 词，段间重叠 100 词。
   - hybrid_indexer.py模块
   - factory.py模块
 
 - opensearch包：
-  - client.py模块:定义了`OpenSearchClient`类，是一个统一的 OpenSearch 客户端封装类。负责管理与 OpenSearch 服务器的连接，提供索引管理能力。支持多种索引搜索模式（BM25、向量、混合），处理文档的增删改查操作。
+  - client.py模块:定义了`OpenSearchClient`类，是一个统一的 OpenSearch 客户端封装类。负责管理与 OpenSearch 服务器的连接，提供索引管理能力。支持多种索引搜索模式（BM25、向量、混合），处理文档的增删改查操作。实际上在环境初始化过程就已经通过`OpenSearchClient`里面定义的`setup_indices`方法创建了faiss索引和数据查询管道。
+  ```
+  查询输入
+    │
+    ├──► BM25 搜索 ──► chunk_text, title, abstract
+    │                   (关键词匹配)
+    │
+    ├──► 向量搜索 ──► embedding (1024维)
+    │                   (余弦相似度)
+    │
+    └──► RRF 融合 ◄── 合并两个搜索结果(Reciprocal Rank Fusion)
+  ```
   - index_config_hybrid.py模块：定义 `ARXIV_PAPERS_CHUNKS_MAPPING`产级的混合搜索索引配置。同时支持 BM25 关键词搜索和 HNSW 向量搜索，针对英文文本优化的分析器配置，防止字段污染和意外数据类型导致的搜索错误。与 RRF 管道配合使用，实现混合搜索。
-  - factory.py模块：定义`make_opensearch_client`函数用来创建OpenSearchClient单一实例。要使用多实例时候，使用`make_opensearch_client_fresh`函数创建新的实例。
-
+  - factory.py模块：定义`make_opensearch_client`函数用来创建OpenSearchClient单一实例，主要用在读取操作，共享客户端提高效率。要使用多实例时候，使用`make_opensearch_client_fresh`函数创建新的实例，索引操作批量写入时候能够独立的资源链接，允许缩影服务链接到不同的opensearch集群，保证隔离型。
 - embedding包：   
   - jina_client.py模块：定义`JinaEmbeddingsClient`类，实现在线Jina embedding模型调用
   - qwen_client.py模块：定义`QwenEmbeddingsClient`类，实现本地qwen embedding模型调用。
