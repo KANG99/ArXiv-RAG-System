@@ -1,10 +1,23 @@
 # ArXiv-RAG-System
 
-## 内容预览
-
 创建在ArXiv文档数据基础上，生产级别RAG应用，方便迁移到其他数据项目。本项目是对其他开源项目的二次开发，[原始参考项目地址](https://github.com/jamwithai/production-agentic-rag-course)。
 
 <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/telegram_and_agentic_ai.png width=440 height=400 title=“图片来源：production-agentic-rag-course”>
+
+## 本次项目主要完成的工作：
+
+- 完成代码梳理，明确项目核心业务流程及技术实现，整理创建梳理文档，方便扩展及项目维护。
+- 部署升级程序运行环境，将opensearch及airflow从2.x升级到3.x,提升系统安全性和稳定性。
+- ollama升级为0.24.0，使用qwen3.5:4b模型替代llama3.2:1b，提升模型在中文环境的支持。
+- 优化PDF文档内容提取，从docling元素提取段落修改为docling生成的节点提取段落，避免解析错误及无效字符。
+- 实现QwenEmbeddingsClient类,实现本地qwen3-embedding:0.6b模型为论文片段做embedding向量。
+- 抽象出Embedding客户端的父类EmbeddingsClient，实现本地embedding和Jina服务端embedding的统一接口调用
+- 根据国内办公软件使用情况，将推送消息服务从telegram迁移到企业微信及钉钉，提升实际使用便利性。
+- **fix**:添加docling模型数据持久化，避免重复从hf下载模型。添加pdf数据持久化及卷映射，方便查看原始文档。
+- **fix**:dockerfile添加部分安装依赖，比如`libgl1`,`libglib2.0-0`,`tzdata`等，设置时区，消除对OpenGL的依赖问题等。
+- **fix**:修复原始parser.py模块误用await导致程序报错的bug。
+
+## 内容概览
 
 ### [完整生产级技术栈](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/production%20tech%20stack.md)
   - FastAPI 
@@ -114,19 +127,11 @@ index_papers_hybrid (下游任务)
   - index_config_hybrid.py模块：定义 `ARXIV_PAPERS_CHUNKS_MAPPING`产级的混合搜索索引配置。同时支持 BM25 关键词搜索和 HNSW 向量搜索，针对英文文本优化的分析器配置，防止字段污染和意外数据类型导致的搜索错误。与 RRF 管道配合使用，实现混合搜索。
   - factory.py模块：定义`make_opensearch_client`函数用来创建OpenSearchClient单一实例。要使用多实例时候，使用`make_opensearch_client_fresh`函数创建新的实例。
 
-- embedding包：
-  - jina_client.py模块
-  - factory.py模块
-
-### 本次项目主要完成的工作：
-
-- 完成代码梳理，部署升级程序运行环境，将opensearch及airflow从2.x升级到3.x,提升系统安全性和稳定性。
-- ollama升级为0.24.0，使用qwen3.5:4b模型替代llama3.2:1b，提升模型在中文环境的支持。
-- 优化PDF文档内容提取，从docling元素提取段落修改为docling生成的节点提取段落，避免解析错误及无效字符。
-- 根据国内办公软件使用情况，将推送消息服务从telegram迁移到企业微信及钉钉，提升实际使用便利性。
-- **fix**:添加docling模型数据持久化，避免重复从hf下载模型。添加pdf数据持久化及卷映射，方便查看原始文档。
-- **fix**:dockerfile添加部分安装依赖，比如`libgl1`,`libglib2.0-0`,`tzdata`等，设置时区，消除对OpenGL的依赖问题等。
-- **fix**:修复原始parser.py模块误用await导致程序报错的bug。
+- embedding包：   
+  - jina_client.py模块：定义`JinaEmbeddingsClient`类，实现在线Jina embedding模型调用
+  - qwen_client.py模块：定义`QwenEmbeddingsClient`类，实现本地qwen embedding模型调用。
+  - embed_client.py模块：定义`JinaEmbeddingsClient`和`QwenEmbeddingsClient`的抽象父类`EmbeddingsClient`,实现统一接口调用。
+  - factory.py模块:根据embedding_contract选择创建适当的embedding client对象，实现在线或者本地文本embedding。
 
 ## 快速开始
 ```bash
