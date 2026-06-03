@@ -2,7 +2,7 @@
 
 创建在ArXiv文档数据基础上，生产级别RAG应用，方便迁移到其他数据项目。本项目是对其他开源项目的二次开发，[原始参考项目地址](https://github.com/jamwithai/production-agentic-rag-course)。
 
-<img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/telegram_and_agentic_ai.png width=440 height=400 title=“图片来源：production-agentic-rag-course”>
+<img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/telegram_and_agentic_ai.png width=440 height=400 title=“图片来源：production-agentic-rag-course”>
 
 ## 本次项目主要完成的工作：
 
@@ -70,7 +70,7 @@ fetch_daily_papers (上游任务)
 index_papers_hybrid (下游任务)
 ```
 
-- [index_papers_hybrid](https://github.com/KANG99/ArXiv-RAG-System/blob/main/airflow/dags/arxiv_ingestion/indexing.py)：获取近期存储在postgres的论文内容，按论文章节拆分文本片段，利用Jina AI做embedding。把拆分好的文本片段和它对应的向量数据，一起上传到 OpenSearch，让系统做好分类、归档，后续能快速检索匹配内容。
+- [index_papers_hybrid](https://github.com/KANG99/ArXiv-RAG-System/blob/main/airflow/dags/arxiv_ingestion/indexing.py)：获取近期存储在postgres的论文内容，按论文章节拆分文本片段，利用Jina或者qwen做embedding。把拆分好的文本片段和它对应的向量数据，一起上传到 OpenSearch，让系统做好分类、归档，后续能快速检索匹配内容。
 
 #####  src根目录
 
@@ -140,6 +140,9 @@ index_papers_hybrid (下游任务)
   ```
   - index_config_hybrid.py模块：定义 `ARXIV_PAPERS_CHUNKS_MAPPING`产级的混合搜索索引配置。同时支持 BM25 关键词搜索和 HNSW 向量搜索，针对英文文本优化的分析器配置，防止字段污染和意外数据类型导致的搜索错误。与 RRF 管道配合使用，实现混合搜索。
   - factory.py模块：定义`make_opensearch_client`函数用来创建OpenSearchClient单一实例，主要用在读取操作，共享客户端提高效率。要使用多实例时候，使用`make_opensearch_client_fresh`函数创建新的实例，索引操作批量写入时候能够独立的资源链接，允许缩影服务链接到不同的opensearch集群，保证隔离型。
+  - 通过opensearch dashboard可以在网页上查看简历的索引内容，选择相应的字段，输入查询查看RRF评分，可以排查输出结果是在索引简历上还是模型输出上出现问题。
+    
+    <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/opensearch%20dashboard.png width=600 height=400 title="opensearch dashboard展示">
 - embedding包：   
   - jina_client.py模块：定义`JinaEmbeddingsClient`类，实现在线Jina embedding模型调用
   - qwen_client.py模块：定义`QwenEmbeddingsClient`类，实现本地qwen embedding模型调用。
