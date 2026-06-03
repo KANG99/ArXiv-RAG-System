@@ -50,7 +50,7 @@
 
 #### 数据管道相关
 
-- 数据管道完成数据获取、入库、文本切片、embeddingg、创建opensearch搜索索引，具体代码梳理请查看[详细代码介绍]()以及[源文件结构及层级依赖关系]((https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/source_dt.md))。
+- 数据管道完成数据获取、入库、文本切片、embeddingg、创建opensearch搜索索引，具体代码梳理请查看[详细代码介绍](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/data%20pipeline.md)以及[源文件结构及层级依赖关系](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/source_dt.md)。
 - [fetch_daily_papers](https://github.com/KANG99/ArXiv-RAG-System/blob/main/airflow/dags/arxiv_ingestion/fetching.py)：arxiv论文数据抓取、下载、docling文本解析解析、postgresql数据入库。
 
   ```
