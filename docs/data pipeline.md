@@ -48,7 +48,7 @@
 
 - indexing包：
   - text_chunker.py模块：定义Text,提供文本重叠分段处理服务。采用基于单词的分段方式，分段长度与重叠区间可自定义配置。默认配置：单段 600 词，段间重叠 100 词。
-  - hybrid_indexer.py模块
+  - hybrid_indexer.py模块:定义
   - factory.py模块
 
 - opensearch包：

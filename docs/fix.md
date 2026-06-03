@@ -1,6 +1,7 @@
-- **fix**:添加docling模型数据持久化，避免重复从hf下载模型。添加pdf数据持久化及卷映射，方便查看原始文档。
-- **fix**:dockerfile添加部分安装依赖，比如`libgl1`,`libglib2.0-0`,`tzdata`等，设置时区，消除对OpenGL的依赖问题等。
-- **fix**:修复原始parser.py模块误用await导致程序报错的bug。
-- **fix**:删除原是项目中src文件夹下没有被调用的创建数据库单例的database.py模块。
-- **fix**:dags/arxiv_ingestion/indexing.py模块使用使@lru_cache 复用数据库连接池，避免重复创建和销毁的开销。
-- **fix**:修复text_chunker.py模块中114行调用_reconstruct_text传入参数错误的bug.
+- 添加docling模型数据持久化，避免重复从hf下载模型。添加pdf数据持久化及卷映射，方便查看原始文档。
+- dockerfile添加部分安装依赖，比如`libgl1`,`libglib2.0-0`,`tzdata`等，设置时区，消除对OpenGL的依赖问题等。
+- 修复原始parser.py模块误用await导致程序报错的bug。
+- 删除原是项目中src文件夹下没有被调用的创建数据库单例的database.py模块。
+- dags/arxiv_ingestion/indexing.py模块使用使@lru_cache 复用数据库连接池，避免重复创建和销毁的开销。
+- 修复text_chunker.py模块中114行调用_reconstruct_text传入参数错误的bug.
+- chunck_data的embedding_model字段从单一的`jina-embeddings-v3`设置为embedding_client.model变量。
