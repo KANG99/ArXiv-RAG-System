@@ -2,8 +2,6 @@ import asyncio
 import logging
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
-# import sys
-# sys.path.append('~/Desktop/learning/ArXiv-RAG-System/')
 
 from src.db.factory import make_database
 from src.services.indexing.factory import make_hybrid_indexing_service
