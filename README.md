@@ -1,6 +1,6 @@
 # ArXiv-RAG-System
 
-创建在ArXiv文档数据基础上，生产级别RAG应用，方便迁移到其他数据项目。本项目是对其他开源项目的二次开发，[原始参考项目地址](https://github.com/jamwithai/production-agentic-rag-course)。
+创建在ArXiv文档数据基础上，在Docker容器部署的生产级别RAG应用，方便迁移到其他数据项目。本项目是对其他开源项目的二次开发，[原始参考项目地址](https://github.com/jamwithai/production-agentic-rag-course)。
 
   <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/telegram_and_agentic_ai.png width=330 height=300 title=“图片来源：production-agentic-rag-course”>
 
@@ -13,12 +13,7 @@
 - 实现QwenEmbeddingsClient类,实现本地qwen3-embedding:0.6b模型为论文片段做embedding向量。
 - 抽象出embedding客户端的父类EmbeddingsClient实现本地和Jina服务端embedding统一接口调用。
 - 根据国内办公软件使用情况，将推送消息服务从telegram迁移到企业微信及钉钉，提升实际使用便利性。
-- **fix**:添加docling模型数据持久化，避免重复从hf下载模型。添加pdf数据持久化及卷映射，方便查看原始文档。
-- **fix**:dockerfile添加部分安装依赖，比如`libgl1`,`libglib2.0-0`,`tzdata`等，设置时区，消除对OpenGL的依赖问题等。
-- **fix**:修复原始parser.py模块误用await导致程序报错的bug。
-- **fix**:删除原是项目中src文件夹下没有被调用的创建数据库单例的database.py模块。
-- **fix**:dags/arxiv_ingestion/indexing.py模块使用使@lru_cache 复用数据库连接池，避免重复创建和销毁的开销。
-- **fix**:修复text_chunker.py模块中114行调用_reconstruct_text传入参数错误的bug.
+- [部分代码修复及配置调整]()
 
 ## 内容概览
 
