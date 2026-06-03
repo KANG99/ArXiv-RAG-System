@@ -48,8 +48,8 @@
 
 - indexing包：
   - text_chunker.py模块：定义Text,提供文本重叠分段处理服务。采用基于单词的分段方式，分段长度与重叠区间可自定义配置。默认配置：单段 600 词，段间重叠 100 词。
-  - hybrid_indexer.py模块:定义
-  - factory.py模块
+  - hybrid_indexer.py模块:创建`HybridIndexingService`定义`index_paper`方法，实现文本分段和embedding，建立opensearch索引，返回创建状态。
+  - factory.py模块：定义`make_hybrid_indexing_service`函数，创建`HybridIndexingService`实例。
 
 - opensearch包：
   - client.py模块:定义了`OpenSearchClient`类，是一个统一的 OpenSearch 客户端封装类。负责管理与 OpenSearch 服务器的连接，提供索引管理能力。支持多种索引搜索模式（BM25、向量、混合），处理文档的增删改查操作。实际上在环境初始化过程就已经通过`OpenSearchClient`里面定义的`setup_indices`方法创建了faiss索引和数据查询管道。
