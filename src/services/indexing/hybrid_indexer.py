@@ -87,7 +87,7 @@ class HybridIndexingService:
                     "start_char": chunk.metadata.start_char,
                     "end_char": chunk.metadata.end_char,
                     "section_title": chunk.metadata.section_title,
-                    "embedding_model": "jina-embeddings-v3",
+                    "embedding_model": self.embeddings_client.model,
                     # Denormalized paper metadata for efficient search
                     "title": paper_data.get("title", ""),
                     "authors": ", ".join(paper_data.get("authors", []))
