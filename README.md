@@ -13,7 +13,7 @@
 - 实现QwenEmbeddingsClient类,实现本地qwen3-embedding:0.6b模型为论文片段做embedding向量。
 - 抽象出embedding客户端的父类EmbeddingsClient实现本地和Jina服务端embedding统一接口调用。
 - 根据国内办公软件使用情况，将推送消息服务从telegram迁移到企业微信及钉钉，提升实际使用便利性。
-- [部分代码修复及配置调整]()
+- [部分代码修复及配置调整](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/fix.md)
 
 ## 内容概览
 
