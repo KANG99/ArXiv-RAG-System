@@ -46,6 +46,9 @@
   - factory.py模块:定义`make_pdf_parser_service`函数创建PDFParserService实例。
 - metadata_fetcher.py模块：通过定义`class MetadataFetcher`类，定义了`fetch_and_process_papers`方法实现数据爬取、批量下载、文档解析、元数据序列化入库完整流程方法，通过`def make_metadata_fetcher`函数，配置返回 `MetadataFetcher`实例。
 
+- repositories包：
+ - paper.py模块：创建`PaperRepository`类，定义了数据库的创建、更新和条件查找。
+
 - indexing包：
   - text_chunker.py模块：定义Text,提供文本重叠分段处理服务。采用基于单词的分段方式，分段长度与重叠区间可自定义配置。默认配置：单段 600 词，段间重叠 100 词。
   - hybrid_indexer.py模块:创建`HybridIndexingService`定义`index_paper`方法，实现文本分段和embedding，建立opensearch索引，返回创建状态。
