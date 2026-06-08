@@ -9,7 +9,7 @@
 | **redis** | redis:7 | rag-redis | 6379 | 缓存服务 |
 | **ollama** | ollama/ollama:0.24.0 | rag-ollama | 11434 | 本地大语言模型服务 |
 
-ollama模型使用：qwen3.5:9b
+ollama模型使用：llama3.2:1b
 
 ---
 

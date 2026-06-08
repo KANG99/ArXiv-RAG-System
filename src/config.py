@@ -171,7 +171,7 @@ class Settings(BaseConfigSettings):
     postgres_max_overflow: int = 0
 
     ollama_host: str = "http://ollama:11434"
-    ollama_model: str = "qwen3.5:4b"
+    ollama_model: str = "llama3.2:1b"
     ollama_timeout: int = 300
 
     # Jina AI embeddings configuration
