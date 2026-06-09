@@ -112,7 +112,6 @@ def create_gradio_interface():
 
     with gr.Blocks(
         title="arXiv Paper Curator - RAG Chat",
-        theme=gr.themes.Soft(),
     ) as interface:
         gr.Markdown(
             """
@@ -223,6 +222,7 @@ def main():
         share=False,
         show_error=True,
         quiet=False,
+        theme=gr.themes.Soft(),
     )
 
 
