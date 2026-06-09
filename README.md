@@ -93,8 +93,14 @@
     <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/opensearch%20dashboard.png width=600 height=400 title="opensearch dashboard展示">
 
 ## 快速开始
+- 打开docker镜像环境
 ```bash
 cd ArXiv-RAG-System
 docker compose up -d --remove-orphans
 ```
-
+- 打开本地ollama服务（也可以取消compose.yml对ollama镜像的注释，直接在docker运行）
+- 打开gradio网页页面
+```bash
+cd src
+uv run python gradio_app.py
+```
