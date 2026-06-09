@@ -1,11 +1,29 @@
 # src根目录
 
-- config.py：基于`BaseConfigSettings`定义各种客户端类参数配置类，比如`ArxivSettings`,`PDFParserSettings`类等。定义`get_settings`函数，返回Settings对象，里面定义了各种基础参数及客户端类参数配置对象。
+- config.py模块：基于`BaseConfigSettings`定义各种客户端类参数配置类，比如`ArxivSettings`,`PDFParserSettings`类等。定义`get_settings`函数，返回Settings对象，里面定义了各种基础参数及客户端类参数配置对象。
 - models包里面的`paper.py`模块定义了论文数据在 PostgreSQL 中的存储结构的SQLAlchemy 数据库模型。
 - repositories包里面的`paper.py`模块定义了`PaperRepository`类，实现了用于数据库数据增加、更新、查询等操作的方法。
-
+- dependencies.py：模块定义了 FastAPI 依赖注入（Dependency Injection） ，用于在整个应用中提供可复用的服务实例。服务在应用启动时创建，请求结束时销毁，避免重复创建对象，提高性能。
+- radio_app.py模块构建了一个 Gradio 网页界面应用 ，为 ArXiv-RAG-System 提供可视化的交互式问答界面。
+```
+用户在界面输入问题
+        │
+        ▼
+点击 "Ask Question" 或按 Enter
+        │
+        ▼
+stream_response() 发送请求到 /api/v1/stream
+        │
+        ▼
+接收流式响应（Server-Sent Events）
+        │
+        ▼
+逐块显示回答内容
+        │
+        ▼
+显示搜索信息（模式、chunks 数量、来源）
 ##  services库
-
+```
 - arxiv包：
   - client.py模块：定义arxiv论文爬虫客户端`ArxivClient`类，该类定义了爬取论文查询页面、解析查询页面、下载论文方法。爬取网页过程中添加了频率限制及错误重试机制。通过解析网页方法，提取查询到的论文标题、url等网页内容，返回`ArxivPaper`对象列表或者单个对象。下载论文的方法通过提取到的论文url将论文保存成PDF格式文档。
     ```python

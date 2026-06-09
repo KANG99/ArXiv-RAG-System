@@ -151,7 +151,7 @@ def create_gradio_interface():
                     )
 
                     model_choice = gr.Dropdown(
-                        choices=["llama3.2:3b", "qwen3.6:35b-mlx"],
+                        choices=["qwen3.6:35b-mlx","glm-4.7-flash:latest"],
                         value=DEFAULT_MODEL,
                         label="LLM Model",
                         info="Larger models may give better answers but are slower",
