@@ -27,7 +27,7 @@ services:
       # Container-specific overrides
       - OPENSEARCH_HOST=http://opensearch:9200
       - OPENSEARCH__HOST=http://opensearch:9200
-      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_HOST=http://host.docker.internal:11434
       - POSTGRES_DATABASE_URL=postgresql+psycopg2://rag_user:rag_password@postgres:5432/rag_db
       - LANGFUSE_HOST=http://localhost:3001
       - LANGFUSE_DEBUG=true
@@ -122,7 +122,7 @@ services:
       - POSTGRES_DATABASE_URL=postgresql+psycopg2://rag_user:rag_password@postgres:5432/rag_db
       - OPENSEARCH_HOST=http://opensearch:9200
       - OPENSEARCH__HOST=http://opensearch:9200
-      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_HOST=http://host.docker.internal:11434
       - REDIS__HOST=redis
     volumes:
       - docling_model_data:/opt/airflow/.cache/huggingface
@@ -147,31 +147,31 @@ services:
     networks:
       - rag-network
 
-  ollama:
-    image: ollama/ollama:0.24.0
-    container_name: rag-ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
-    deploy:
-      resources:
-        limits:
-          memory: 18G            # 限制容器最大内存
-          cpus: "6.0"
-        reservations:
-          memory: 6G             # 预留内存
-          cpus: "2.0"
-    healthcheck:
-      test: ["CMD", "ollama", "list"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    networks:
-      - rag-network
+  # ollama:
+  #   image: ollama/ollama:0.24.0
+  #   container_name: rag-ollama
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #     - /etc/localtime:/etc/localtime:ro
+  #     - /etc/timezone:/etc/timezone:ro
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 18G            # 限制容器最大内存
+  #         cpus: "8.0"
+  #       reservations:
+  #         memory: 6G             # 预留内存
+  #         cpus: "2.0"
+  #   healthcheck:
+  #     test: ["CMD", "ollama", "list"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 30s
+  #   networks:
+  #     - rag-network
 
   postgres:
     image: postgres:17

@@ -230,7 +230,7 @@ class LangfuseTracer:
 
         Args:
             name: Name for this generation (e.g., "decision_llm", "grading_llm")
-            model: Model identifier (e.g., "llama3.2:1b", "gpt-4o")
+            model: Model identifier (e.g., "qwen3.6:35b-mlx", "gpt-4o")
             input_data: Input to the LLM (prompt or messages)
             metadata: Additional metadata (temperature, max_tokens, etc.)
 

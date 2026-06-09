@@ -21,7 +21,7 @@ class QwenEmbeddingsClient(EmbeddingsClient):
     Documentation: https://ollama.com/library/qwen3-embedding
     """
 
-    def __init__(self, api_key: str = None, base_url: str = "http://ollama:11434", model: str = "qwen3-embedding:0.6b"):
+    def __init__(self, api_key: str = None, base_url: str = "http://host.docker.internal:11434", model: str = "qwen3-embedding:4b"):
         """Initialize Qwen embeddings client.
         :param api_key: Ollama no required
         :param base_url: Ollama API base URL

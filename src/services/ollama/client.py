@@ -97,7 +97,7 @@ class OllamaClient:
         """
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
-                data = {"model": model, "prompt": prompt, "stream": stream, **kwargs}
+                data = {"model": model, "prompt": prompt, "stream": stream, "think": False, **kwargs}
 
                 logger.info(f"Sending request to Ollama: model={model}, stream={stream}, extra_params={kwargs}")
                 response = await client.post(f"{self.base_url}/api/generate", json=data)
@@ -194,7 +194,7 @@ class OllamaClient:
         self,
         query: str,
         chunks: List[Dict[str, Any]],
-        model: str = "llama3.2:1b",
+        model: str = "qwen3.6:35b-mlx",
         use_structured_output: bool = False,
     ) -> Dict[str, Any]:
         """
@@ -275,7 +275,7 @@ class OllamaClient:
         self,
         query: str,
         chunks: List[Dict[str, Any]],
-        model: str = "llama3.2:1b",
+        model: str = "qwen3.6:35b-mlx",
     ):
         """
         Generate a streaming RAG answer using retrieved chunks.
