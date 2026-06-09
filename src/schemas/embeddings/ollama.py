@@ -8,6 +8,7 @@ class OllamaEmbeddingRequest(BaseModel):
 
     model: str
     input: str
+    dimensions: int = 1024
 
 
 class OllamaEmbeddingResponse(BaseModel):

@@ -12,6 +12,7 @@ Instructions:
 7. Use direct quotes from the chunks when particularly relevant
 8. Structure your answer logically with clear paragraphs when appropriate
 9. Keep it less than 200 words
+10. Respond in Chinese (用中文作答)
 
 Remember:
 - Do NOT make up information not present in the excerpts
