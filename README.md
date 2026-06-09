@@ -1,6 +1,6 @@
 # ArXiv-RAG-System
 
-本项目是对其他开源项目的二次开发，[原始参考项目地址](https://github.com/jamwithai/production-agentic-rag-course)。创建在ArXiv文档数据基础上，在Docker容器部署的生产级别RAG应用，实现系统中文本土化，方便迁移到其他数据项目。
+本项目是基于[jamwithai/production-agentic-rag-course](https://github.com/jamwithai/production-agentic-rag-course)的二次开发。创建在ArXiv文档数据基础上，在Docker容器部署的生产级别RAG应用，实现系统中文本土化，方便迁移到其他数据项目。
 
   <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/telegram_and_agentic_ai.png width=330 height=300 title=“图片来源：production-agentic-rag-course”>
 
@@ -12,7 +12,6 @@
 - 优化PDF文档内容提取，从docling元素提取段落修改为docling生成的节点提取段落，避免解析错误及无效字符。
 - 实现QwenEmbeddingsClient类,实现本地qwen3-embedding:4b模型为论文片段做1024维embedding向量。
 - 抽象出embedding客户端的父类EmbeddingsClient实现本地和Jina服务端embedding统一接口调用。
-- 添加英文翻译层，将腾讯浑元HY-MT2-1.8B打包成gguf格式模型，在ollama提供实现中文问题翻译服务。
 - 完成搜索系统性能评估，执行响应时间、吞吐量、recall@10、precision@10等指标性能测试。
   ```
   ================================================================================
@@ -104,3 +103,4 @@ docker compose up -d --remove-orphans
 cd src
 uv run python gradio_app.py
 ```
+<img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/gradio.png title="gradio QA website">
