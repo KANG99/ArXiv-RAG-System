@@ -3,8 +3,7 @@
 - config.py模块：基于`BaseConfigSettings`定义各种客户端类参数配置类，比如`ArxivSettings`,`PDFParserSettings`类等。定义`get_settings`函数，返回Settings对象，里面定义了各种基础参数及客户端类参数配置对象。
 - models包里面的`paper.py`模块定义了论文数据在 PostgreSQL 中的存储结构的SQLAlchemy 数据库模型。
 - repositories包里面的`paper.py`模块定义了`PaperRepository`类，实现了用于数据库数据增加、更新、查询等操作的方法。
-- dependencies.py：模块定义了 FastAPI 依赖注入（Dependency Injection） ，用于在整个应用中提供可复用的服务实例。服务在应用启动时创建，请求结束时销毁，避免重复创建对象，提高性能。
-- radio_app.py模块构建了一个 Gradio 网页界面应用 ，为 ArXiv-RAG-System 提供可视化的交互式问答界面。
+
 ```
 用户在界面输入问题
         │
