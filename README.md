@@ -92,6 +92,7 @@
     <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/opensearch%20dashboard.png width=600 height=400 title="opensearch dashboard展示">
 
 - [generate_daily_report](https://github.com/KANG99/ArXiv-RAG-System/blob/main/airflow/dags/arxiv_ingestion/reporting.py):产生追踪每日论文抓取和索引进度,监控 OpenSearch 索引大小，记录每日执行情况的日志报告。快速用于定位失败环节，监控和分析数据管道的运行状态。
+  <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/daily_report.png width=600 height=400 title="opensearch dashboard展示">
 
 
 ### FastAPI服务
