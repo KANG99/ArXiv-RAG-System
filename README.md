@@ -8,6 +8,9 @@
 
 - 完成代码梳理，明确项目核心业务流程及技术实现，整理创建梳理文档，方便扩展及项目维护。
 - 部署升级程序运行环境，将opensearch及airflow从2.x升级到3.x,提升系统安全性和稳定性。
+  - 将airflow从2.10.3升级到3.2.1,实现全架构解耦，[启动脚本](https://github.com/KANG99/ArXiv-RAG-System/blob/main/airflow/entrypoint.sh)必须作出如下调整：1.airflow dag-processor（独立进程强制化）；2.airflow scheduler（职责变轻）；3.airflow triggerer（异步触发器）；4.airflow api-server（全新核心组件，取代 Webserver 核心功能）[具体查看]()。进行了上述核心调整后，添加了看门狗机制，监控核心组件健康状况。
+  - 将opensearch从2.10.3升级到3.6.0,提升系统安全性和稳定性。
+- 将langfuse从3.x升级到4.x,简化代码结构，提升可维护性。
 - 为了最优化M系列芯片性能，将ollama部署从docker替换到本地，升级ollama模型为qwen3.6:35b-mlx,提升模型性能及响应速度及模型对中文的准确性。
 - 优化PDF文档内容提取，从docling元素提取段落修改为docling生成的节点提取段落，避免解析错误及无效字符。
 - 实现QwenEmbeddingsClient类,实现本地qwen3-embedding:4b模型为论文片段做1024维embedding向量。
@@ -87,17 +90,29 @@
       │
       └──► RRF 融合 ◄── 合并两个搜索结果(Reciprocal Rank Fusion)
     ```
-  - 通过opensearch dashboard可以在网页上查看简历的索引内容，选择相应的字段，输入查询查看RRF评分，可以排查输出结果是在索引简历上还是模型输出上出现问题。
+  - 通过opensearch dashboard可以在网页上查看简历的索引内容，选择相应的字段，输入查询查看RRF评分，可以排查输出结果是在索引建立上还是模型输出上出现问题。
     
     <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/opensearch%20dashboard.png width=600 height=400 title="opensearch dashboard展示">
 
 - [generate_daily_report](https://github.com/KANG99/ArXiv-RAG-System/blob/main/airflow/dags/arxiv_ingestion/reporting.py):产生追踪每日论文抓取和索引进度,监控 OpenSearch 索引大小，记录每日执行情况的日志报告。快速用于定位失败环节，监控和分析数据管道的运行状态。
   <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/daily_report.png width=600 height=400 title="opensearch dashboard展示">
 
+### LLM服务
+
+- 使用ollama部署LLM服务，由[自定义ollama库](https://github.com/KANG99/ArXiv-RAG-System/tree/main/src/services/ollama)提供相应的服务支持，[具体代码介绍]()。
+- 由于是在M系列芯片上开发该项目，为了发挥M芯片的最佳性能，提升LLM生成token的速度。将ollama服务部署在了本地。
+
 
 ### FastAPI服务
 
+- 使用FastAPI实现web后端服务，如图所示定义了健康检查端点、基础RAG LLM问答端点、混合搜索端点、Agentic RAG问答端点。具体查看[API服务具体代码梳理]。(https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/web%20services.md)
 
+- 启动langfuse服务，实现对 RAG 流程各阶段的追踪和监控。
+
+
+- 使用gradio构建问答前段问答页面
+
+<img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/gradio.png title="gradio QA website">
 
 
 ## 快速开始
@@ -106,10 +121,16 @@
 cd ArXiv-RAG-System
 docker compose up -d --remove-orphans
 ```
-- 打开本地ollama服务（也可以取消compose.yml对ollama镜像的注释，直接在docker运行）
-- 打开gradio网页页面
+- 打开本地ollama服务，手动安装模型（也可以取消compose.yml对ollama镜像的注释，直接在docker运行）
+```
+#安装qwen3-embedding:4b
+ollama pull qwen3-embedding:4b
+#安装qwen3.6:35b-mlx 
+ollama pull qwen3.6:35b-mlx
+```
+- 打开gradio网页页面,进行页面问答
 ```bash
 cd src
 uv run python gradio_app.py
 ```
-<img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/gradio.png title="gradio QA website">
+
