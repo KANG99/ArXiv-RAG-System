@@ -11,11 +11,13 @@ from src.routers.ask import ask_router, stream_router
 from src.services.arxiv.factory import make_arxiv_client
 from src.services.cache.factory import make_cache_client
 from src.services.embeddings.factory import make_embeddings_service
-from src.services.langfuse.factory import make_langfuse_tracer
 from src.services.ollama.factory import make_ollama_client
 from src.services.opensearch.factory import make_opensearch_client
 from src.services.pdf_parser.factory import make_pdf_parser_service
 # from src.services.telegram.factory import make_telegram_service
+from langfuse import get_client
+from dotenv import load_dotenv
+load_dotenv() 
 
 # Setup logging
 logging.basicConfig(
@@ -68,7 +70,7 @@ async def lifespan(app: FastAPI):
     app.state.pdf_parser = make_pdf_parser_service()
     app.state.embeddings_service = make_embeddings_service()
     app.state.ollama_client = make_ollama_client()
-    app.state.langfuse_tracer = make_langfuse_tracer()
+    app.state.langfuse_tracer = get_client()
     app.state.cache_client = make_cache_client(settings)
     logger.info("Services initialized: arXiv API client, PDF parser, OpenSearch, Embeddings, Ollama, Langfuse, Cache")
 
@@ -98,7 +100,9 @@ async def lifespan(app: FastAPI):
     # if hasattr(app.state, "telegram_service") and app.state.telegram_service:
     #     await app.state.telegram_service.stop()
     #     logger.info("Telegram bot stopped")
-
+    app.state.langfuse_tracer.flush()
+    app.state.langfuse_tracer.shutdown()
+    # Close the database connection
     database.teardown()
     logger.info("API shutdown complete")
 

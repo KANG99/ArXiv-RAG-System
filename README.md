@@ -8,9 +8,9 @@
 
 - 完成代码梳理，明确项目核心业务流程及技术实现，整理创建梳理文档，方便扩展及项目维护。
 - 部署升级程序运行环境，将opensearch及airflow从2.x升级到3.x,提升系统安全性和稳定性。
-  - 将airflow从2.10.3升级到3.2.1,实现全架构解耦，[启动脚本](https://github.com/KANG99/ArXiv-RAG-System/blob/main/airflow/entrypoint.sh)必须作出如下调整：1.airflow dag-processor（独立进程强制化）；2.airflow scheduler（职责变轻）；3.airflow triggerer（异步触发器）；4.airflow api-server（全新核心组件，取代 Webserver 核心功能）[具体查看]()。进行了上述核心调整后，添加了看门狗机制，监控核心组件健康状况。
-  - 将opensearch从2.10.3升级到3.6.0,提升系统安全性和稳定性。
-- 将langfuse从3.x升级到4.x,简化代码结构，提升可维护性。
+  - 将airflow从2.10.3升级到3.2.1,实现全架构解耦，[启动脚本](https://github.com/KANG99/ArXiv-RAG-System/blob/main/airflow/entrypoint.sh)必须作出如下调整：1.airflow dag-processor（独立进程强制化）；2.airflow scheduler（职责变轻）；3.airflow triggerer（异步触发器）；4.airflow api-server（全新核心组件，取代 Webserver 核心功能）[具体查看](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/airflow_entrypoint.md)。进行了上述核心调整后，添加了看门狗机制，监控核心组件健康状况。
+  - 将opensearch从2.19.0升级到3.6.0,提升系统安全性和稳定性。2.修改compose.yml文件，将plugins.security.disabled=true设置为false,使用官方测试专用证书（Demo Certs）测试,更贴近生产环境。
+- 将langfuse从3.x升级到4.x,使用observe装饰器替换自定义上下文管理模式，直接废弃servicese\langfuse包，化代码结构。
 - 为了最优化M系列芯片性能，将ollama部署从docker替换到本地，升级ollama模型为qwen3.6:35b-mlx,提升模型性能及响应速度及模型对中文的准确性。
 - 优化PDF文档内容提取，从docling元素提取段落修改为docling生成的节点提取段落，避免解析错误及无效字符。
 - 实现QwenEmbeddingsClient类,实现本地qwen3-embedding:4b模型为论文片段做1024维embedding向量。

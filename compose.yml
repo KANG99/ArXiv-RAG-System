@@ -29,7 +29,7 @@ services:
       - OPENSEARCH__HOST=http://opensearch:9200
       - OLLAMA_HOST=http://host.docker.internal:11434
       - POSTGRES_DATABASE_URL=postgresql+psycopg2://rag_user:rag_password@postgres:5432/rag_db
-      - LANGFUSE_HOST=http://localhost:3001
+      - LANGFUSE_HOST=http://rag-langfuse-web:3000 #这里之前是http://localhost:3001
       - LANGFUSE_DEBUG=true
       - REDIS__HOST=redis
     networks:
@@ -59,9 +59,21 @@ services:
     environment:
       - discovery.type=single-node
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
-      - plugins.security.disabled=true #这个就不能设为false否则无法自动启动
       - bootstrap.memory_lock=true
       - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPENSEARCH_INITIAL_ADMIN_PASSWORD}
+      #开发环境实际设置为true就可以了，后续证书配置都不用了。
+      - plugins.security.disabled=true
+      # # 节点内部通信（Transport layer）
+      # - plugins.security.ssl.transport.pemkey_filepath=esnode-key.pem  # 私钥文件
+      # - plugins.security.ssl.transport.pemcert_filepath=esnode.pem     # 证书文件
+      # - plugins.security.ssl.transport.pemtrustedcas_filepath=root-ca.pem  # CA 证书
+      # # 外部访问接口（REST layer）
+      # - plugins.security.ssl.http.enabled=true
+      # - plugins.security.ssl.http.pemkey_filepath=esnode-key.pem  # 私钥文件
+      # - plugins.security.ssl.http.pemcert_filepath=esnode.pem     # 证书文件
+      # - plugins.security.ssl.http.pemtrustedcas_filepath=root-ca.pem  # CA 证书
+      # # 允许使用 demo 证书（仅开发环境）
+      # - plugins.security.allow_unsafe_democertificates=true
     ports:
       - "9200:9200"
       - "9600:9600"
@@ -318,10 +330,10 @@ services:
       REDIS_TLS_ENABLED: "false"
       LANGFUSE_INIT_ORG_ID: "default-org"
       LANGFUSE_INIT_ORG_NAME: "RAG Organization"
-      LANGFUSE_INIT_PROJECT_NAME: "Agentic RAG"
-      LANGFUSE_INIT_USER_EMAIL: "admin@example.com"
-      LANGFUSE_INIT_USER_NAME: "Admin User"
-      LANGFUSE_INIT_USER_PASSWORD: "admin123"
+      LANGFUSE_INIT_PROJECT_NAME: "Kang99 Agentic RAG"
+      LANGFUSE_INIT_USER_EMAIL: ${LANGFUSE_USER_EMAIL}
+      LANGFUSE_INIT_USER_NAME: ${LANGFUSE_USER_NAME}
+      LANGFUSE_INIT_USER_PASSWORD: ${LANGFUSE_USER_PASSWORD}
     healthcheck:
       # test: ["CMD-SHELL", "curl -f http://localhost:3000/api/public/health || exit 1"],环境中不一定已经安装了curl，经常测试为unhealthy
       test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/public/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
