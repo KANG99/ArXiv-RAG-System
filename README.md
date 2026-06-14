@@ -111,11 +111,11 @@
 
 - 启动langfuse服务，实现对 RAG 流程各阶段的追踪和监控。
 
-  <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/langfuse-web.jpeg title="langfuse website">
+  <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/langfuse-web.jpeg title="langfuse website" width=600 height=400>
 
 - 使用gradio构建问答前段问答页面
 
-  <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/gradio.png title="gradio QA website">
+  <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/gradio.png title="gradio QA website" width=600 height=400>
 
 
 ## 快速开始
