@@ -1,7 +1,7 @@
 from typing import Optional
 
 from src.services.embeddings.embed_client import EmbeddingsClient
-from src.services.langfuse.client import LangfuseTracer
+from langfuse import Langfuse
 from src.services.ollama.client import OllamaClient
 from src.services.opensearch.client import OpenSearchClient
 
@@ -13,9 +13,10 @@ def make_agentic_rag_service(
     opensearch_client: OpenSearchClient,
     ollama_client: OllamaClient,
     embeddings_client: EmbeddingsClient,
-    langfuse_tracer: Optional[LangfuseTracer] = None,
+    langfuse_tracer: Optional[Langfuse] = None,
     top_k: int = 3,
     use_hybrid: bool = True,
+    model: Optional[str] = None,
 ) -> AgenticRAGService:
     """
     Create AgenticRAGService with dependency injection.
@@ -27,6 +28,7 @@ def make_agentic_rag_service(
         langfuse_tracer: Optional Langfuse tracer for observability
         top_k: Number of documents to retrieve (default: 3)
         use_hybrid: Use hybrid search (default: True)
+        model: Model to use for LLM calls (default: None, uses GraphConfig default)
 
     Returns:
         Configured AgenticRAGService instance
@@ -36,6 +38,10 @@ def make_agentic_rag_service(
         top_k=top_k,
         use_hybrid=use_hybrid,
     )
+    
+    # Override model if provided
+    if model:
+        graph_config.model = model
 
     return AgenticRAGService(
         opensearch_client=opensearch_client,

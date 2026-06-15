@@ -3,12 +3,12 @@ import time
 from typing import Dict, List, Optional
 
 from langchain_core.messages import HumanMessage
-from langfuse.langchain import CallbackHandler
+from langfuse.langchain import CallbackHandler as LangfuseCallbackHandler
 from langgraph.graph import END, START, StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
 
 from src.services.embeddings.embed_client import EmbeddingsClient
-from src.services.langfuse.client import LangfuseTracer
+from langfuse import Langfuse
 from src.services.ollama.client import OllamaClient
 from src.services.opensearch.client import OpenSearchClient
 
@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 class AgenticRAGService:
-    """Agentic RAG service 
+    """Agentic RAG service
 
     This implementation uses:
     - context_schema for dependency injection
@@ -44,7 +44,7 @@ class AgenticRAGService:
         opensearch_client: OpenSearchClient,
         ollama_client: OllamaClient,
         embeddings_client: EmbeddingsClient,
-        langfuse_tracer: Optional[LangfuseTracer] = None,
+        langfuse_tracer: Optional[Langfuse] = None,
         graph_config: Optional[GraphConfig] = None,
     ):
         """Initialize agentic RAG service.
@@ -52,7 +52,7 @@ class AgenticRAGService:
         :param opensearch_client: Client for document search
         :param ollama_client: Client for LLM generation
         :param embeddings_client: Client for embeddings
-        :param langfuse_tracer: Optional Langfuse tracer
+        :param langfuse_tracer: Optional Langfuse tracer (v4 SDK)
         :param graph_config: Configuration for graph execution
         """
         self.opensearch = opensearch_client
@@ -68,9 +68,9 @@ class AgenticRAGService:
         logger.info(f"  Max retrieval attempts: {self.graph_config.max_retrieval_attempts}")
         logger.info(f"  Guardrail threshold: {self.graph_config.guardrail_threshold}")
 
-        # Build graph once (no runnables needed!)
+          # Build graph once (no runnables needed!)
         self.graph = self._build_graph()
-        logger.info("✓ AgenticRAGService initialized successfully")
+        logger.info(" AgenticRAGService initialized successfully")
 
     def _build_graph(self):
         """Build and compile the LangGraph workflow.
@@ -82,19 +82,19 @@ class AgenticRAGService:
         """
         logger.info("Building LangGraph workflow with context_schema")
 
-        # Create workflow with AgentState and Context schema
+          # Create workflow with AgentState and Context schema
         workflow = StateGraph(AgentState, context_schema=Context)
 
-        # Create tools (these still need to be created upfront for ToolNode)
+          # Create tools (these still need to be created upfront for ToolNode)
         retriever_tool = create_retriever_tool(
             opensearch_client=self.opensearch,
             embeddings_client=self.embeddings,
             top_k=self.graph_config.top_k,
             use_hybrid=self.graph_config.use_hybrid,
-        )
+          )
         tools = [retriever_tool]
 
-        # Add nodes (just function references - no closures needed!)
+          # Add nodes (just function references - no closures needed!)
         logger.info("Adding nodes to workflow graph")
         workflow.add_node("guardrail", ainvoke_guardrail_step)
         workflow.add_node("out_of_scope", ainvoke_out_of_scope_step)
@@ -104,58 +104,58 @@ class AgenticRAGService:
         workflow.add_node("rewrite_query", ainvoke_rewrite_query_step)
         workflow.add_node("generate_answer", ainvoke_generate_answer_step)
 
-        # Add edges
+          # Add edges
         logger.info("Configuring graph edges and routing logic")
 
-        # Start → guardrail validation
+          # Start -> guardrail validation
         workflow.add_edge(START, "guardrail")
 
-        # Guardrail → route based on score
+          # Guardrail -> route based on score
         workflow.add_conditional_edges(
-            "guardrail",
+              "guardrail",
             continue_after_guardrail,
-            {
-                "continue": "retrieve",
-                "out_of_scope": "out_of_scope",
-            },
-        )
+              {
+                  "continue": "retrieve",
+                  "out_of_scope": "out_of_scope",
+              },
+          )
 
-        # Out of scope → END
+          # Out of scope -> END
         workflow.add_edge("out_of_scope", END)
 
-        # Retrieve node creates tool call
+          # Retrieve node creates tool call
         workflow.add_conditional_edges(
-            "retrieve",
+              "retrieve",
             tools_condition,
-            {
-                "tools": "tool_retrieve",
-                END: END,
-            },
-        )
+              {
+                  "tools": "tool_retrieve",
+                  END: END,
+              },
+          )
 
-        # After tool retrieval → grade documents
+          # After tool retrieval -> grade documents
         workflow.add_edge("tool_retrieve", "grade_documents")
 
-        # After grading → route based on relevance
+          # After grading -> route based on relevance
         workflow.add_conditional_edges(
-            "grade_documents",
+              "grade_documents",
             lambda state: state.get("routing_decision", "generate_answer"),
-            {
-                "generate_answer": "generate_answer",
-                "rewrite_query": "rewrite_query",
-            },
-        )
+              {
+                  "generate_answer": "generate_answer",
+                  "rewrite_query": "rewrite_query",
+              },
+          )
 
-        # After rewriting → try retrieve again
+          # After rewriting -> try retrieve again
         workflow.add_edge("rewrite_query", "retrieve")
 
-        # After answer generation → done
+          # After answer generation -> done
         workflow.add_edge("generate_answer", END)
 
-        # Compile graph
+          # Compile graph
         logger.info("Compiling LangGraph workflow")
         compiled_graph = workflow.compile()
-        logger.info("✓ Graph compilation successful")
+        logger.info(" Graph compilation successful")
 
         return compiled_graph
 
@@ -182,100 +182,147 @@ class AgenticRAGService:
         logger.info(f"Model: {model_to_use}")
         logger.info("=" * 80)
 
-        # Validate input
+          # Validate input
         if not query or len(query.strip()) == 0:
             logger.error("Empty query received")
             raise ValueError("Query cannot be empty")
 
-        # Create trace if Langfuse is enabled (v3 SDK)
-        trace = None
-        if self.langfuse_tracer and self.langfuse_tracer.client:
-            logger.info("Creating Langfuse trace (v3 SDK)")
-            metadata = {
-                "env": self.graph_config.settings.environment,
-                "service": "agentic_rag",
-                "top_k": self.graph_config.top_k,
-                "use_hybrid": self.graph_config.use_hybrid,
-                "model": model_to_use,
-            }
-            # V3 SDK: Use start_as_current_span - will be used with 'with' statement
-            trace = self.langfuse_tracer.client.start_as_current_span(
-                name="agentic_rag_request",
-            )
+          # Create root span if Langfuse is enabled (v4 SDK)
+        langfuse_enabled = self.langfuse_tracer is not None
+        metadata = {
+              "env": self.graph_config.settings.environment,
+              "service": "agentic_rag",
+              "top_k": self.graph_config.top_k,
+              "use_hybrid": self.graph_config.use_hybrid,
+              "model": model_to_use,
+          } if langfuse_enabled else {}
 
-        # Use proper context manager pattern
         async def _execute_with_trace():
             """Execute the workflow with or without tracing context."""
-            if trace is not None:
-                with trace as trace_obj:
-                    trace_obj.update(
-                        input={"query": query},
-                        metadata=metadata,
-                        user_id=user_id,
-                        session_id=f"session_{user_id}",
-                    )
-                    logger.debug(f"Trace created: {trace_obj}")
-                    return await self._run_workflow(query, model_to_use, user_id, trace_obj)
+            if langfuse_enabled:
+                with self.langfuse_tracer.start_as_current_observation(
+                    as_type="span", name="agentic_rag_request"
+                  ) as span:
+                    try:
+                        span.update(
+                            input={"query": query},
+                            metadata=metadata,
+                            user_id=user_id,
+                            session_id=f"session_{user_id}",
+                          )
+                        logger.debug(f"Langfuse trace created: {span}")
+                        result = await self._run_workflow(query, model_to_use, user_id)
+
+                          # Update span with output
+                        answer = self._extract_answer(result)
+                        sources = self._extract_sources(result)
+                        retrieval_attempts = result.get("retrieval_attempts", 0)
+                        reasoning_steps = self._extract_reasoning_steps(result)
+
+                        span.update(
+                            output={
+                                  "answer": answer,
+                                  "sources_count": len(sources),
+                                  "retrieval_attempts": retrieval_attempts,
+                                  "reasoning_steps": reasoning_steps,
+                              }
+                          )
+
+                        return result
+                    except Exception as e:
+                        logger.error(f"Error in workflow execution: {str(e)}")
+                        span.update(output={"error": str(e)})
+                        raise
             else:
-                return await self._run_workflow(query, model_to_use, user_id, None)
+                result = await self._run_workflow(query, model_to_use, user_id)
+                answer = self._extract_answer(result)
+                sources = self._extract_sources(result)
+                retrieval_attempts = result.get("retrieval_attempts", 0)
+                reasoning_steps = self._extract_reasoning_steps(result)
+
+                return {
+                      "query": query,
+                      "answer": answer,
+                      "sources": sources,
+                      "reasoning_steps": reasoning_steps,
+                      "retrieval_attempts": retrieval_attempts,
+                      "rewritten_query": result.get("rewritten_query"),
+                      "execution_time": result.get("execution_time", 0),
+                      "guardrail_score": result.get("guardrail_result").score if result.get("guardrail_result") else None,
+                  }
 
         try:
-            return await _execute_with_trace()
+            result = await _execute_with_trace()
+              # Format return value
+            answer = self._extract_answer(result)
+            sources = self._extract_sources(result)
+            retrieval_attempts = result.get("retrieval_attempts", 0)
+            reasoning_steps = self._extract_reasoning_steps(result)
+
+            execution_time = result.get("execution_time", 0)
+            return {
+                  "query": query,
+                  "answer": answer,
+                  "sources": sources,
+                  "reasoning_steps": reasoning_steps,
+                  "retrieval_attempts": retrieval_attempts,
+                  "rewritten_query": result.get("rewritten_query"),
+                  "execution_time": execution_time,
+                  "guardrail_score": result.get("guardrail_result").score if result.get("guardrail_result") else None,
+              }
         except Exception as e:
             logger.error(f"Error in Agentic RAG execution: {str(e)}")
             logger.exception("Full traceback:")
             raise
 
-    async def _run_workflow(self, query: str, model_to_use: str, user_id: str, trace) -> dict:
-        """Execute the workflow with the given trace context."""
+    async def _run_workflow(self, query: str, model_to_use: str, user_id: str) -> dict:
+        """Execute the workflow."""
         try:
             start_time = time.time()
 
             logger.info("Invoking LangGraph workflow")
 
-            # State initialization
+              # State initialization
             state_input = {
-                "messages": [HumanMessage(content=query)],
-                "retrieval_attempts": 0,
-                "guardrail_result": None,
-                "routing_decision": None,
-                "sources": None,
-                "relevant_sources": [],
-                "relevant_tool_artefacts": None,
-                "grading_results": [],
-                "metadata": {},
-                "original_query": None,
-                "rewritten_query": None,
-            }
+                  "messages": [HumanMessage(content=query)],
+                  "retrieval_attempts": 0,
+                  "guardrail_result": None,
+                  "routing_decision": None,
+                  "sources": None,
+                  "relevant_sources": [],
+                  "relevant_tool_artefacts": None,
+                  "grading_results": [],
+                  "metadata": {},
+                  "original_query": None,
+                  "rewritten_query": None,
+              }
 
-            # Runtime context (dependencies)
+              # Runtime context (dependencies)
             runtime_context = Context(
                 ollama_client=self.ollama,
                 opensearch_client=self.opensearch,
                 embeddings_client=self.embeddings,
                 langfuse_tracer=self.langfuse_tracer,
-                trace=trace,
-                langfuse_enabled=self.langfuse_tracer is not None and self.langfuse_tracer.client is not None,
+                langfuse_enabled=self.langfuse_tracer is not None,
                 model_name=model_to_use,
                 temperature=self.graph_config.temperature,
                 top_k=self.graph_config.top_k,
                 max_retrieval_attempts=self.graph_config.max_retrieval_attempts,
                 guardrail_threshold=self.graph_config.guardrail_threshold,
-            )
+              )
 
-            # Create config with CallbackHandler if Langfuse is enabled (v3 SDK)
+              # Create config with CallbackHandler if Langfuse is enabled (v4 SDK)
             config = {"thread_id": f"user_{user_id}_session_{int(time.time())}"}
 
-            # Add CallbackHandler for automatic LLM tracing
-            # IMPORTANT: CallbackHandler automatically inherits the current span context
-            # Since we're inside start_as_current_span, it will be linked automatically
-            if self.langfuse_tracer and trace:
+              # Add CallbackHandler for automatic LLM tracing
+              # IMPORTANT: CallbackHandler automatically inherits the current span context
+              # Since we're inside start_as_current_observation, it will be linked automatically
+            if self.langfuse_tracer:
                 try:
-                    # V3 SDK: CallbackHandler() automatically uses current trace context
-                    # No need to pass trace explicitly - it's handled by context propagation
-                    callback_handler = CallbackHandler()
+                      # V4 SDK: CallbackHandler() uses current trace context via context propagation
+                    callback_handler = LangfuseCallbackHandler()
                     config["callbacks"] = [callback_handler]
-                    logger.info("✓ CallbackHandler added (will auto-link to current trace)")
+                    logger.info(" CallbackHandler added (will auto-link to current trace)")
                 except Exception as e:
                     logger.warning(f"Failed to create CallbackHandler: {e}")
 
@@ -283,30 +330,16 @@ class AgenticRAGService:
                 state_input,
                 config=config,
                 context=runtime_context,
-            )
+              )
 
             execution_time = time.time() - start_time
-            logger.info(f"✓ Graph execution completed in {execution_time:.2f}s")
+            logger.info(f" Graph execution completed in {execution_time:.2f}s")
 
-            # Extract results
+              # Extract results
             answer = self._extract_answer(result)
             sources = self._extract_sources(result)
             retrieval_attempts = result.get("retrieval_attempts", 0)
             reasoning_steps = self._extract_reasoning_steps(result)
-
-            # Update trace (cleanup handled by context manager)
-            if trace:
-                trace.update(
-                    output={
-                        "answer": answer,
-                        "sources_count": len(sources),
-                        "retrieval_attempts": retrieval_attempts,
-                        "reasoning_steps": reasoning_steps,
-                        "execution_time": execution_time,
-                    }
-                )
-                trace.end()
-                self.langfuse_tracer.flush()
 
             logger.info("=" * 80)
             logger.info("Agentic RAG Request Completed Successfully")
@@ -316,27 +349,11 @@ class AgenticRAGService:
             logger.info(f"Execution time: {execution_time:.2f}s")
             logger.info("=" * 80)
 
-            return {
-                "query": query,
-                "answer": answer,
-                "sources": sources,
-                "reasoning_steps": reasoning_steps,
-                "retrieval_attempts": retrieval_attempts,
-                "rewritten_query": result.get("rewritten_query"),
-                "execution_time": execution_time,
-                "guardrail_score": result.get("guardrail_result").score if result.get("guardrail_result") else None,
-            }
+            return result
 
         except Exception as e:
             logger.error(f"Error in workflow execution: {str(e)}")
             logger.exception("Full traceback:")
-
-            # Update trace with error (cleanup handled by context manager)
-            if trace:
-                trace.update(output={"error": str(e)}, level="ERROR")
-                trace.end()
-                self.langfuse_tracer.flush()
-
             raise
 
     def _extract_answer(self, result: dict) -> str:
@@ -404,15 +421,15 @@ class AgenticRAGService:
         try:
             logger.info("Generating graph visualization as PNG")
             png_bytes = self.graph.get_graph().draw_mermaid_png()
-            logger.info(f"✓ Generated PNG visualization ({len(png_bytes)} bytes)")
+            logger.info(f" Generated PNG visualization ({len(png_bytes)} bytes)")
             return png_bytes
         except ImportError as e:
             logger.error(f"Failed to generate visualization - missing dependencies: {e}")
             logger.error("Install with: pip install pygraphviz or apt-get install graphviz")
             raise ImportError(
-                "Graph visualization requires pygraphviz. "
-                "Install with: pip install pygraphviz (requires graphviz system package)"
-            ) from e
+                  "Graph visualization requires pygraphviz. "
+                  "Install with: pip install pygraphviz (requires graphviz system package)"
+              ) from e
         except Exception as e:
             logger.error(f"Failed to generate graph visualization: {e}")
             raise
@@ -429,14 +446,14 @@ class AgenticRAGService:
             >>> service = AgenticRAGService(...)
             >>> mermaid = service.get_graph_mermaid()
             >>> print(mermaid)
-            graph TD
+          graph TD
                 __start__ --> guardrail
                 ...
         """
         try:
             logger.info("Generating graph as mermaid diagram")
             mermaid_str = self.graph.get_graph().draw_mermaid()
-            logger.info(f"✓ Generated mermaid diagram ({len(mermaid_str)} characters)")
+            logger.info(f" Generated mermaid diagram ({len(mermaid_str)} characters)")
             return mermaid_str
         except Exception as e:
             logger.error(f"Failed to generate mermaid diagram: {e}")
@@ -457,7 +474,7 @@ class AgenticRAGService:
         try:
             logger.info("Generating ASCII graph representation")
             ascii_str = self.graph.get_graph().print_ascii()
-            logger.info("✓ Generated ASCII graph representation")
+            logger.info(" Generated ASCII graph representation")
             return ascii_str
         except Exception as e:
             logger.error(f"Failed to generate ASCII graph: {e}")

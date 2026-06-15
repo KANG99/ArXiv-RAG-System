@@ -56,26 +56,6 @@ async def ainvoke_guardrail_step(
     query = get_latest_query(state["messages"])
     logger.debug(f"Evaluating query: {query[:100]}...")
 
-    # Create span for guardrail validation (v2 SDK)
-    span = None
-    if runtime.context.langfuse_enabled and runtime.context.trace:
-        try:
-            span = runtime.context.langfuse_tracer.create_span(
-                trace=runtime.context.trace,
-                name="guardrail_validation",
-                input_data={
-                    "query": query,
-                    "threshold": runtime.context.guardrail_threshold,
-                },
-                metadata={
-                    "node": "guardrail",
-                    "model": runtime.context.model_name,
-                },
-            )
-            logger.debug("Created Langfuse span for guardrail validation (v2 SDK)")
-        except Exception as e:
-            logger.warning(f"Failed to create span for guardrail validation: {e}")
-
     try:
         # Create guardrail prompt from template
         guardrail_prompt = GUARDRAIL_PROMPT.format(question=query)
@@ -84,7 +64,7 @@ async def ainvoke_guardrail_step(
         llm = runtime.context.ollama_client.get_langchain_model(
             model=runtime.context.model_name,
             temperature=0.0,
-        )
+            )
 
         # Create structured output LLM for guardrail scoring
         structured_llm = llm.with_structured_output(GuardrailScoring)
@@ -95,21 +75,22 @@ async def ainvoke_guardrail_step(
 
         logger.info(f"Guardrail result - Score: {response.score}, Reason: {response.reason}")
 
-        # Update span with successful result
-        if span:
-            execution_time = (time.time() - start_time) * 1000  # Convert to ms
-            runtime.context.langfuse_tracer.end_span(
-                span,
-                output={
-                    "score": response.score,
-                    "reason": response.reason,
-                    "decision": "continue" if response.score >= runtime.context.guardrail_threshold else "out_of_scope",
-                },
-                metadata={
-                    "execution_time_ms": execution_time,
-                    "threshold": runtime.context.guardrail_threshold,
-                },
-            )
+        # Trace with Langfuse v4
+        if runtime.context.langfuse_enabled:
+            try:
+                execution_time = (time.time() - start_time) * 1000
+                with runtime.context.langfuse_tracer.start_as_current_observation(
+                    as_type="span", name="guardrail_validation"
+                        ) as span:
+                    span.update(output={
+                            "score": response.score,
+                            "reason": response.reason,
+                            "decision": "continue" if response.score >= runtime.context.guardrail_threshold else "out_of_scope",
+                        }, metadata={"execution_time_ms": execution_time})
+            except Exception as e:
+                logger.warning(f"Failed to create span for guardrail validation: {e}")
+
+        return {"guardrail_result": response}
 
     except Exception as e:
         logger.error(f"LLM guardrail validation failed: {e}, falling back to default")
@@ -120,15 +101,19 @@ async def ainvoke_guardrail_step(
             reason=f"LLM validation failed, using conservative default: {str(e)}"
         )
 
-        # Update span with error
-        if span:
-            execution_time = (time.time() - start_time) * 1000
-            runtime.context.langfuse_tracer.update_span(
-                span,
-                output={"score": response.score, "reason": response.reason, "error": str(e)},
-                metadata={"execution_time_ms": execution_time, "fallback": True},
-                level="WARNING",
-            )
-            runtime.context.langfuse_tracer.end_span(span)
+        # Trace error with Langfuse v4
+        if runtime.context.langfuse_enabled:
+            try:
+                execution_time = (time.time() - start_time) * 1000
+                with runtime.context.langfuse_tracer.start_as_current_observation(
+                    as_type="span", name="guardrail_validation"
+                ) as span:
+                    span.update(
+                        output={"score": response.score, "reason": response.reason, "error": str(e)},
+                        metadata={"execution_time_ms": execution_time, "fallback": True},
+                        status_message="WARNING",
+                        )
+            except Exception as inner_e:
+                logger.warning(f"Failed to create span for guardrail error: {inner_e}")
 
-    return {"guardrail_result": response}
+        return {"guardrail_result": response}

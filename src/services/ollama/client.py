@@ -7,6 +7,7 @@ from src.config import Settings
 from src.exceptions import OllamaConnectionError, OllamaException, OllamaTimeoutError
 from src.schemas.ollama import RAGResponse
 from src.services.ollama.prompts import RAGPromptBuilder, ResponseParser
+from langchain_ollama import ChatOllama
 
 logger = logging.getLogger(__name__)
 
@@ -304,3 +305,12 @@ class OllamaClient:
         except Exception as e:
             logger.error(f"Error generating streaming RAG answer: {e}")
             raise OllamaException(f"Failed to generate streaming RAG answer: {e}")
+
+    def get_langchain_model(self, model: str, temperature: float = 0.7, **kwargs):
+        llm = ChatOllama(
+            model=model,
+            temperature=temperature,
+            base_url=self.base_url,
+            **kwargs
+        )
+        return llm

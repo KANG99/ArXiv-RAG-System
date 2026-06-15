@@ -42,39 +42,23 @@ async def ainvoke_grade_documents_step(
         context_preview = context[:500] + "..." if len(context) > 500 else context
         chunks_preview = [{"text_preview": context_preview, "length": len(context)}]
 
-    # Create span for document grading
-    span = None
-    if runtime.context.langfuse_enabled and runtime.context.trace:
-        try:
-            span = runtime.context.langfuse_tracer.create_span(
-                trace=runtime.context.trace,
-                name="document_grading",
-                input_data={
-                    "query": question,
-                    "context_length": len(context) if context else 0,
-                    "has_context": context is not None,
-                    "chunks_received": chunks_preview,
-                },
-                metadata={
-                    "node": "grade_documents",
-                    "model": runtime.context.model_name,
-                },
-            )
-            logger.debug("Created Langfuse span for document grading")
-        except Exception as e:
-            logger.warning(f"Failed to create span for grade_documents node: {e}")
-
     if not context:
         logger.warning("No context found, routing to rewrite_query")
 
-        # Update span with no context result
-        if span:
-            execution_time = (time.time() - start_time) * 1000
-            runtime.context.langfuse_tracer.end_span(
-                span,
-                output={"routing_decision": "rewrite_query", "reason": "no_context"},
-                metadata={"execution_time_ms": execution_time},
-            )
+        # Trace with Langfuse v4 for early exit
+        if runtime.context.langfuse_enabled:
+            try:
+                execution_time = (time.time() - start_time) * 1000
+                with runtime.context.langfuse_tracer.start_as_current_observation(
+                    as_type="span", name="document_grading"
+                ) as span:
+                    span.update(
+                        output={"routing_decision": "rewrite_query", "reason": "no_context"},
+                        metadata={"execution_time_ms": execution_time},
+                        status_message="WARNING",
+                    )
+            except Exception as e:
+                logger.warning(f"Failed to create span for grade_documents node: {e}")
 
         return {"routing_decision": "rewrite_query", "grading_results": []}
 
@@ -130,22 +114,28 @@ async def ainvoke_grade_documents_step(
 
     logger.info(f"Grading result: {'relevant' if is_relevant else 'not relevant'}, routing to: {route}")
 
-    # Update span with grading result
-    if span:
-        execution_time = (time.time() - start_time) * 1000
-        runtime.context.langfuse_tracer.end_span(
-            span,
-            output={
-                "routing_decision": route,
-                "is_relevant": is_relevant,
-                "score": score,
-                "reasoning": grading_result.reasoning,
-            },
-            metadata={
-                "execution_time_ms": execution_time,
-                "context_length": len(context),
-            },
-        )
+    # Trace with Langfuse v4
+    if runtime.context.langfuse_enabled:
+        try:
+            execution_time = (time.time() - start_time) * 1000
+            with runtime.context.langfuse_tracer.start_as_current_observation(
+                as_type="span", name="document_grading"
+            ) as span:
+                span.update(
+                    output={
+                        "routing_decision": route,
+                        "is_relevant": is_relevant,
+                        "score": score,
+                        "reasoning": grading_result.reasoning,
+                    },
+                    metadata={
+                        "execution_time_ms": execution_time,
+                        "context_length": len(context),
+                    },
+                    status_message="OK" if is_relevant else "WARNING",
+                )
+        except Exception as e:
+            logger.warning(f"Failed to create span for grade_documents node: {e}")
 
     return {
         "routing_decision": route,

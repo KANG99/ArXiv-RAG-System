@@ -46,33 +46,12 @@ async def ainvoke_rewrite_query_step(
 
     logger.debug(f"Rewriting query using LLM: {original_question[:100]}...")
 
-    # Create span for query rewriting
-    span = None
-    if runtime.context.langfuse_enabled and runtime.context.trace:
-        try:
-            span = runtime.context.langfuse_tracer.create_span(
-                trace=runtime.context.trace,
-                name="query_rewriting",
-                input_data={
-                    "original_query": original_question,
-                    "attempt": current_attempt,
-                },
-                metadata={
-                    "node": "rewrite_query",
-                    "strategy": "llm_based_expansion",
-                    "model": runtime.context.model_name,
-                },
-            )
-            logger.debug("Created Langfuse span for query rewriting")
-        except Exception as e:
-            logger.warning(f"Failed to create span for rewrite_query node: {e}")
-
     # Use LLM to rewrite the query intelligently
     try:
         # Create structured LLM for query rewriting
         llm = runtime.context.ollama_client.get_langchain_model(
             model=runtime.context.model_name,
-            temperature=0.3,  # Lower temperature for more focused rewriting
+            temperature=0.3,   # Lower temperature for more focused rewriting
         )
         structured_llm = llm.with_structured_output(QueryRewriteOutput)
 
@@ -102,6 +81,35 @@ async def ainvoke_rewrite_query_step(
         )
         logger.debug(f"Rewriting reasoning: {reasoning}")
 
+        # Trace with Langfuse v4 on success
+        if runtime.context.langfuse_enabled:
+            try:
+                execution_time = (time.time() - start_time) * 1000
+                with runtime.context.langfuse_tracer.start_as_current_observation(
+                    as_type="span", name="query_rewriting"
+                ) as span:
+                    span.update(
+                        output={
+                            "rewritten_query": rewritten_query,
+                            "reasoning": reasoning,
+                            "original_query": original_question,
+                        },
+                        metadata={
+                            "execution_time_ms": execution_time,
+                            "original_length": len(original_question),
+                            "rewritten_length": len(rewritten_query),
+                            "llm_duration_seconds": llm_duration,
+                        },
+                        status_message="OK",
+                    )
+            except Exception as e:
+                logger.warning(f"Failed to create span for rewrite_query node: {e}")
+
+        return {
+            "messages": [HumanMessage(content=rewritten_query)],
+            "rewritten_query": rewritten_query,
+        }
+
     except Exception as e:
         logger.error(f"Failed to rewrite query using LLM: {e}")
         logger.warning("Falling back to simple keyword expansion")
@@ -109,25 +117,26 @@ async def ainvoke_rewrite_query_step(
         rewritten_query = f"{original_question} research paper arxiv machine learning"
         reasoning = "Fallback: Simple keyword expansion due to LLM error"
 
-    # Update span with rewriting result
-    if span:
-        execution_time = (time.time() - start_time) * 1000
-        runtime.context.langfuse_tracer.end_span(
-            span,
-            output={
-                "rewritten_query": rewritten_query,
-                "reasoning": reasoning,
-                "original_query": original_question,
-            },
-            metadata={
-                "execution_time_ms": execution_time,
-                "original_length": len(original_question),
-                "rewritten_length": len(rewritten_query),
-                "llm_duration_seconds": llm_duration if 'llm_duration' in locals() else None,
-            },
-        )
+        # Trace with Langfuse v4 on fallback
+        if runtime.context.langfuse_enabled:
+            try:
+                execution_time = (time.time() - start_time) * 1000
+                with runtime.context.langfuse_tracer.start_as_current_observation(
+                    as_type="span", name="query_rewriting"
+                ) as span:
+                    span.update(
+                        output={
+                            "rewritten_query": rewritten_query,
+                            "reasoning": reasoning,
+                            "original_query": original_question,
+                        },
+                        metadata={"execution_time_ms": execution_time},
+                        status_message="WARNING",
+                    )
+            except Exception as inner_e:
+                logger.warning(f"Failed to create span for rewrite_query fallback: {inner_e}")
 
-    return {
-        "messages": [HumanMessage(content=rewritten_query)],
-        "rewritten_query": rewritten_query,
-    }
+        return {
+            "messages": [HumanMessage(content=rewritten_query)],
+            "rewritten_query": rewritten_query,
+        }

@@ -10,7 +10,7 @@
 - 部署升级程序运行环境，将opensearch及airflow从2.x升级到3.x,提升系统安全性和稳定性。
   - 将airflow从2.10.3升级到3.2.1,实现全架构解耦，[启动脚本](https://github.com/KANG99/ArXiv-RAG-System/blob/main/airflow/entrypoint.sh)必须作出如下调整：1.airflow dag-processor（独立进程强制化）；2.airflow scheduler（职责变轻）；3.airflow triggerer（异步触发器）；4.airflow api-server（全新核心组件，取代 Webserver 核心功能）[具体查看](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/airflow_entrypoint.md)。进行了上述核心调整后，添加了看门狗机制，监控核心组件健康状况。
   - 将opensearch从2.19.0升级到3.6.0,提升系统安全性和稳定性。2.修改compose.yml文件，将plugins.security.disabled=true设置为false,使用官方测试专用证书（Demo Certs）测试,更贴近生产环境。
-- 将langfuse从3.x升级到4.x，直接废弃servicese\langfuse包，使用上下文管理模式，化代码结构。
+- 将langfuse从3.x升级到4.x，直接废弃servicese\langfuse包，使用v4上下文管理模式，简化代码结构。
 - 为了最优化M系列芯片性能，将ollama部署从docker替换到本地，升级ollama模型为qwen3.6:35b-mlx,提升模型性能及响应速度及模型对中文的准确性。
 - 优化PDF文档内容提取，从docling元素提取段落修改为docling生成的节点提取段落，避免解析错误及无效字符。
 - 实现QwenEmbeddingsClient类,实现本地qwen3-embedding:4b模型为论文片段做1024维embedding向量。
@@ -108,6 +108,38 @@
 ### FastAPI服务
 
 - 使用FastAPI实现web后端服务，如图所示定义了健康检查端点、基础RAG LLM问答端点、混合搜索端点、Agentic RAG问答端点。具体查看[API服务具体代码梳理](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/web%20services.md)。
+
+- Agentic RAG问答端点：由基于 LangGraph 构建的 [Agentic RAG服务包]()支撑。接收用户的学术问题，非学术问题拒绝回答，通过多层智能节点协作，从 arXiv论文数据库中检索相关信息并生成回答。
+
+  - 工作流：
+
+    ```
+    START → guardrail（安全校验）
+              ├─ score ≥ threshold → retrieve（检索论文）→ tool_retrieve（工具执行）
+              │                                                ↓
+              │                                         grade_documents（文档评分）
+              │                                            ↓
+              │                          ┌───────────────┴───────────────┐
+              │                          is_relevant=yes                    is_relevant=no
+              │                                  ↓                         ↓
+              │                         generate_answer（生成答案）      rewrite_query（改写问题）
+              │                                                        ↓
+              │                                                   retrieve（重试检索）...
+              │                                                          ↓
+              └─ score < threshold → out_of_scope（超出范围）→ END
+    ```
+  - 各个节点职责
+
+    | Node | 作用 |
+    |------|------|
+    | guardrail | 用 LLM 评估用户问题是否属于 CS/AI/ML 研究范畴，给出 0-100 评分 |
+    | out_of_scope | 对非学术问题（如闲聊、常识）给出友好拒绝回答 |
+    | retrieve | 触发论文检索工具调用 |
+    | tool_retrieve | 实际执行检索，从 OpenSearch 获取论文片段 |
+    | grade_documents | LLM 评判检索到的文档是否相关（yes/no） |
+    | rewrite_query | 如果文档不相关，改写问题后重试检索（最多 2 次） |
+    | generate_answer | 基于检索到的论文上下文生成最终答案 |
+
 
 - 启动langfuse服务，实现对 RAG 流程各阶段的追踪和监控。
 

@@ -30,14 +30,13 @@ async def ainvoke_out_of_scope_step(
 
     # Generate helpful response message
     response_text = (
-        "I apologize, but I can only help with questions about academic research papers "
-        "in Computer Science, Artificial Intelligence, and Machine Learning from arXiv.\n\n"
-        f"Your question: '{question}'\n\n"
-        "This appears to be outside my domain of expertise. For questions like this, you might want to try:\n"
-        "- General-purpose AI assistants for broad knowledge questions\n"
-        "- Domain-specific resources for topics outside CS/AI/ML\n"
-        "- Technical documentation if asking about specific software/tools\n\n"
-        "If you have a question about AI/ML research papers, I'd be happy to help!"
+"很抱歉，我只能帮助解答关于计算机科学、人工智能和机器学习领域来自 arXiv 的学术研究论文问题。\n\n"
+f"您的问题：'{question}'\n\n"
+"这似乎超出了我的专业范围。对于此类问题，您可以尝试：\n"
+"- 通用的 AI 助手来获取广泛的知识\n"
+"- CS/AI/ML 之外主题的领域特定资源\n"
+"- 特定软件/工具的技术文档\n\n"
+"如果您有关于 AI/ML 研究论文的问题，我很乐意帮助！"
     )
 
     logger.info("Responding with out-of-scope message")
