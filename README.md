@@ -101,7 +101,7 @@
 
 ### LLM服务
 
-- 使用ollama部署LLM服务，由[自定义ollama库](https://github.com/KANG99/ArXiv-RAG-System/tree/main/src/services/ollama)提供相应的服务支持，[具体代码介绍]()。
+- 使用ollama部署LLM服务，由[自定义ollama库](https://github.com/KANG99/ArXiv-RAG-System/tree/main/src/services/ollama)提供相应的服务支持，[具体代码介绍](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/ollama%20serve.md)。
 - 由于是在M系列芯片上开发该项目，为了发挥M芯片的最佳性能，提升LLM生成token的速度。将ollama服务部署在了本地。
 
 
