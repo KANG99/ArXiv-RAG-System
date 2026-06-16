@@ -101,15 +101,14 @@
 
 ### LLM服务
 
-- 使用ollama部署LLM服务，由[自定义ollama库](https://github.com/KANG99/ArXiv-RAG-System/tree/main/src/services/ollama)提供相应的服务支持，[具体代码介绍](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/ollama%20serve.md)。
+- 使用ollama部署LLM服务，由[自定义ollama库](https://github.com/KANG99/ArXiv-RAG-System/tree/main/src/services/ollama)提供相应的服务支持。使用了redis缓存问答的方式，提升响应效率。[具体代码介绍](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/ollama%20serve.md)。
 - 由于是在M系列芯片上开发该项目，为了发挥M芯片的最佳性能，提升LLM生成token的速度。将ollama服务部署在了本地。
-
 
 ### FastAPI服务
 
 - 使用FastAPI实现web后端服务，如图所示定义了健康检查端点、基础RAG LLM问答端点、混合搜索端点、Agentic RAG问答端点。具体查看[API服务具体代码梳理](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/web%20services.md)。
 
-- Agentic RAG问答端点：由基于 LangGraph 构建的 [Agentic RAG服务包]()支撑。接收用户的学术问题，非学术问题拒绝回答，通过多层智能节点协作，从 arXiv论文数据库中检索相关信息并生成回答。
+- Agentic RAG问答端点：由基于 LangGraph 构建的 [Agentic RAG服务包](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/agentic-rag.md)支撑。接收用户的学术问题，非学术问题以友好方式拒绝回答，通过多层智能节点协作，从 arXiv论文数据库中检索相关信息并生成回答。
 
   - 工作流：
 
