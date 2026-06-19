@@ -15,7 +15,7 @@
 - 优化PDF文档内容提取，从docling元素提取段落修改为docling生成的节点提取段落，避免解析错误及无效字符。
 - 实现QwenEmbeddingsClient类,实现本地qwen3-embedding:4b模型为论文片段做1024维embedding向量。
 - 抽象出embedding客户端的父类EmbeddingsClient实现本地和Jina服务端embedding统一接口调用。
-- 优化cache使用机制，使用问题向量比对的方式，提升相似问题缓存命中机率。
+- 添加问题翻译模块，使用将用户输入的问题翻译为英文，提升问题检索能力。
 - 完成搜索系统性能评估，执行响应时间、吞吐量、recall@10、precision@10等指标性能测试。
   ```
   ================================================================================
@@ -26,7 +26,7 @@
   混合(RRF)     2400ms       ~25 req/s        0.89        0.84          
   ================================================================================
   ```
-- 根据国内社交软件的使用情况，将消息收发服务从telegram迁移到QQ机器人，提升实际使用便利性。（企业微信需要企业认证，微信目前没有开放相关接口）
+- 根据国内社交软件的使用情况，将消息收发服务从telegram迁移到QQ机器人，提升实际使用便利性。（目前只支持文本模式，持续完善图片和语音模式）
 - [部分代码修复及配置调整](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/fix.md)
 
 ## 内容概览
@@ -148,33 +148,57 @@
 
   <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/gradio.png title="gradio QA website" width=600 height=400>
 
+### QQ机器人
+
+- QQ接入RAG系统，实现用户使用QQ机器人进行问答，如图所示。
+
+  <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/QQBot.jpeg title="QQBot" width=600 height=400>
+
+  ps：目前只支持文本模式，持续完善图片和语音模式。
+
 
 ## 快速开始
 
+- 配置环境变量
+  - 复制.env_example文件到.env文件
+  - 根据实际情况修改.env文件中的环境变量
+  ```bash
+  cp .env_example .env
+  nano .env
+  ```
+  - 主要修改内容：
+    - 修改JINA_API_KEY为自己的Jina API密钥（只是用本地向量转换不配置）
+    - 修改QQ__APP_ID为自己的QQ机器人ID
+    - 修改QQ__APP_SECRET为自己的QQ机器人Secret
+    - 修改LANGFUSE__PUBLIC_KEY为自己的langfuse公钥
+    - 修改LANGFUSE__SECRET_KEY为自己的langfuse密钥
+
 - 打开docker镜像环境
-```bash
-cd ArXiv-RAG-System
-docker compose up -d --remove-orphans
-```
+  ```bash
+  cd ArXiv-RAG-System
+  docker compose up -d --remove-orphans
+  ```
 
 - 打开本地ollama服务，手动安装模型（也可以取消compose.yml对ollama镜像的注释，直接在docker运行）
-```
-#安装qwen3-embedding:4b
-ollama pull qwen3-embedding:4b
-#安装qwen3.6:35b-mlx 
-ollama pull qwen3.6:35b-mlx
-```
+  ```
+  # 打开ollama服务
+  ollama serve
+  #安装qwen3-embedding:4b
+  ollama pull qwen3-embedding:4b
+  #安装qwen3.6:35b-mlx 
+  ollama pull qwen3.6:35b-mlx
+  ```
 
 - 端口测试（ask端口为例）
-```
-curl -X POST "http://localhost:8000/api/v1/ask" \
-   -H "Content-Type: application/json" \
-   -d '{"query": "请为我介绍一下基于koopman算子理论的adakoop算法", "top_k": 3}' \
-   | jq .
-```
+  ```
+  curl -X POST "http://localhost:8000/api/v1/ask" \
+    -H "Content-Type: application/json" \
+    -d '{"query": "请为我介绍一下基于koopman算子理论的adakoop算法", "top_k": 3}' \
+    | jq .
+  ```
 
 - 打开gradio网页页面,进行页面问答
-```bash
-cd src
-uv run python gradio_app.py
-```
+  ```bash
+  cd src
+  uv run python gradio_app.py
+  ```
