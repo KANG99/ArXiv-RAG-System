@@ -1,6 +1,10 @@
+import logging
+
 from fastapi import APIRouter, HTTPException
-from src.dependencies import AgenticRAGDep, LangfuseDep
+from src.dependencies import AgenticRAGDep, CacheDep, LangfuseDep
 from src.schemas.api.ask import AgenticAskResponse, AskRequest, FeedbackRequest, FeedbackResponse
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1", tags=["agentic-rag"])
 
@@ -9,6 +13,7 @@ router = APIRouter(prefix="/api/v1", tags=["agentic-rag"])
 async def ask_agentic(
     request: AskRequest,
     agentic_rag: AgenticRAGDep,
+    cache_client: CacheDep,
 ) -> AgenticAskResponse:
     """
     Agentic RAG endpoint with intelligent retrieval and query refinement.
@@ -37,11 +42,30 @@ async def ask_agentic(
         HTTPException: If processing fails
     """
     try:
+        # Check exact cache first
+        if cache_client:
+            try:
+                cached_response = await cache_client.find_cached_response(request)
+                if cached_response:
+                    logger.info("Returning cached response for exact query match")
+                    return AgenticAskResponse(
+                        query=cached_response.query,
+                        answer=cached_response.answer,
+                        sources=cached_response.sources,
+                        chunks_used=cached_response.chunks_used,
+                        search_mode=cached_response.search_mode,
+                        reasoning_steps=[],
+                        retrieval_attempts=0,
+                        trace_id=None,
+                    )
+            except Exception as e:
+                logger.warning(f"Cache check failed, proceeding with normal flow: {e}")
+
         result = await agentic_rag.ask(
             query=request.query,
         )
 
-        return AgenticAskResponse(
+        response = AgenticAskResponse(
             query=result["query"],
             answer=result["answer"],
             sources=result.get("sources", []),
@@ -51,6 +75,15 @@ async def ask_agentic(
             retrieval_attempts=result.get("retrieval_attempts", 0),
             trace_id=result.get("trace_id"),
         )
+
+        # Store response in exact match cache
+        if cache_client:
+            try:
+                await cache_client.store_response(request, response)
+            except Exception as e:
+                logger.warning(f"Failed to store response in cache: {e}")
+
+        return response
 
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))

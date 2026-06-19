@@ -158,6 +158,19 @@ class TelegramSettings(BaseConfigSettings):
     bot_token: str = ""
     enabled: bool = False
 
+class QQSettings(BaseConfigSettings):
+    model_config = SettingsConfigDict(
+        env_file=[".env", str(ENV_FILE_PATH)],
+        env_prefix="QQ__",
+        extra="ignore",
+        frozen=True,
+        case_sensitive=False,
+    )
+
+    app_id: str = ""
+    app_secret: str = ""
+    enabled: bool = False
+
 
 class Settings(BaseConfigSettings):
     app_version: str = "0.1.0"
@@ -186,6 +199,8 @@ class Settings(BaseConfigSettings):
     langfuse: LangfuseSettings = Field(default_factory=LangfuseSettings)
     redis: RedisSettings = Field(default_factory=RedisSettings)
     telegram: TelegramSettings = Field(default_factory=TelegramSettings)
+    qq: QQSettings = Field(default_factory=QQSettings)
+
 
     @field_validator("postgres_database_url")
     @classmethod

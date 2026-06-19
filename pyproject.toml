@@ -25,6 +25,7 @@ dependencies = [
     "langchain-core>=0.3.0",
     "langchain-community>=0.3.0",
     "langchain-ollama>=0.3.0",
+    "qq-botpy>=1.2.1",
 ]
 readme = "README.md"
 

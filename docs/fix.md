@@ -5,4 +5,4 @@
 - dags/arxiv_ingestion/indexing.py模块使用使@lru_cache 复用数据库连接池，避免重复创建和销毁的开销。
 - 修复text_chunker.py模块中114行调用_reconstruct_text传入参数错误的bug.
 - chunck_data的embedding_model字段从单一的`jina-embeddings-v3`设置为embedding_client.model变量。
-- 修复ollama包里面的client.py模块，get_langchain_model方法缺失，导致/api/v1/ask-agentic端口无法使用的问题。
+- 修复ollama包里面的client.py模块，get_langchain_model方法缺失，导致/api/v1/ask-agentic端口无法使用的问题，并且为该端口添加cache response功能。

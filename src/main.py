@@ -1,7 +1,7 @@
 import logging
 import os
 from contextlib import asynccontextmanager
-
+import asyncio
 import uvicorn
 from fastapi import FastAPI
 from src.config import get_settings
@@ -14,10 +14,8 @@ from src.services.embeddings.factory import make_embeddings_service
 from src.services.ollama.factory import make_ollama_client
 from src.services.opensearch.factory import make_opensearch_client
 from src.services.pdf_parser.factory import make_pdf_parser_service
-# from src.services.telegram.factory import make_telegram_service
+from src.services.qq.factory import make_qq_service
 from langfuse import get_client
-from dotenv import load_dotenv
-load_dotenv() 
 
 # Setup logging
 logging.basicConfig(
@@ -74,32 +72,29 @@ async def lifespan(app: FastAPI):
     app.state.cache_client = make_cache_client(settings)
     logger.info("Services initialized: arXiv API client, PDF parser, OpenSearch, Embeddings, Ollama, Langfuse, Cache")
 
-    # # Initialize Telegram bot (Week 7)
-    # telegram_service = make_telegram_service(
-    #     opensearch_client=app.state.opensearch_client,
-    #     embeddings_client=app.state.embeddings_service,
-    #     ollama_client=app.state.ollama_client,
-    #     cache_client=app.state.cache_client,
-    #     langfuse_tracer=app.state.langfuse_tracer,
-    # )
-
-    # if telegram_service:
-    #     app.state.telegram_service = telegram_service
-    #     try:
-    #         await telegram_service.start()
-    #         logger.info("Telegram bot started successfully")
-    #     except Exception as e:
-    #         logger.error(f"Failed to start Telegram bot: {e}")
-    # else:
-    #     logger.info("Telegram bot not configured - skipping initialization")
+    # # Initialize QQ bot
+    logger.info("Initializing QQ bot...")
+    qq_service = make_qq_service()
+    if qq_service:
+        app.state.qq_service = qq_service
+        try:
+            bot_task = asyncio.create_task(
+                app.state.qq_service.start(appid=settings.qq.app_id, secret=settings.qq.app_secret)
+            )
+            logger.info("QQ bot started successfully")
+        except Exception as e:
+            logger.error(f"Failed to start QQ bot: {e}")
+    else:
+        logger.info("QQ bot not configured - skipping initialization")
 
     logger.info("API ready")
     yield
 
     # # Cleanup
-    # if hasattr(app.state, "telegram_service") and app.state.telegram_service:
-    #     await app.state.telegram_service.stop()
-    #     logger.info("Telegram bot stopped")
+    if qq_service:
+        await qq_service.close()
+        bot_task.cancel()
+        logger.info("QQ bot closed")
     app.state.langfuse_tracer.flush()
     app.state.langfuse_tracer.shutdown()
     # Close the database connection
