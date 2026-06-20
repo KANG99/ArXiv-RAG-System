@@ -217,7 +217,6 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 .DS_Store
-A-production-agentic-rag-course-main/
 .env
 # Docker
 .dockerignore
