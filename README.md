@@ -32,11 +32,12 @@
 ## 内容概览
 
 ### [完整生产级技术栈](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/production%20tech%20stack.md)
-  - FastAPI 
+  - FastAPI 0.136.1
   - PostgreSQL 17
   - OpenSearch 3.6.0
   - Apache Airflow 3.2.1
   - Ollama 0.24.0
+  - redis 7
 
 ### [Docker Compose服务架构](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/docker%20compose.md)
 ```
