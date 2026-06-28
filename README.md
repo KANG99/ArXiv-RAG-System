@@ -2,7 +2,7 @@
 
 本项目是基于[jamwithai/production-agentic-rag-course](https://github.com/jamwithai/production-agentic-rag-course)的二次开发。创建在ArXiv文档数据基础上，在Docker容器部署的生产级别RAG应用，实现系统中文本土化，方便迁移到其他数据项目。
 
-  <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/telegram_and_agentic_ai.png width=330 height=300 title=“图片来源：production-agentic-rag-course”>
+  <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/telegram_and_agentic_ai.png  title=“图片来源：production-agentic-rag-course”>
 
 ## 本次项目主要完成的工作：
 
@@ -58,7 +58,7 @@
 
 ### Airflow 数据管道相关任务
 
-<img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/airflow%20dags.png width=600 height=400 title="airflow data pipeline">
+<img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/airflow%20dags.png title="airflow data pipeline">
 
 - 数据管道完成数据获取、入库、文本切片、embeddingg、创建opensearch搜索索引，具体代码梳理请查看[详细代码介绍](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/data%20pipeline.md)以及[源文件结构及层级依赖关系](https://github.com/KANG99/ArXiv-RAG-System/blob/main/docs/source_dt.md)。
 - [fetch_daily_papers](https://github.com/KANG99/ArXiv-RAG-System/blob/main/airflow/dags/arxiv_ingestion/fetching.py)：arxiv论文数据抓取、下载、docling文本解析解析、postgresql数据入库。
@@ -94,11 +94,11 @@
     ```
   - 通过opensearch dashboard可以在网页上查看简历的索引内容，选择相应的字段，输入查询查看RRF评分，可以排查输出结果是在索引建立上还是模型输出上出现问题。
     
-    <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/opensearch%20dashboard.png width=600 height=400 title="opensearch dashboard展示">
+    <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/opensearch%20dashboard.png title="opensearch dashboard展示">
 
 - [generate_daily_report](https://github.com/KANG99/ArXiv-RAG-System/blob/main/airflow/dags/arxiv_ingestion/reporting.py):产生追踪每日论文抓取和索引进度,监控 OpenSearch 索引大小，记录每日执行情况的日志报告。快速用于定位失败环节，监控和分析数据管道的运行状态。
 
-  <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/daily_report.png width=600 height=400 title="opensearch dashboard展示">
+  <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/daily_report.png title="opensearch dashboard展示">
 
 ### LLM服务
 
@@ -143,17 +143,17 @@
 
 - 启动langfuse服务，实现对 RAG 流程各阶段的追踪和监控。
 
-  <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/langfuse-web.jpeg title="langfuse website" width=600 height=400>
+  <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/langfuse-web.jpeg title="langfuse website">
 
 - 使用gradio构建问答前段问答页面
 
-  <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/gradio.png title="gradio QA website" width=600 height=400>
+  <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/gradio.png title="gradio QA website">
 
 ### QQ机器人
 
 - QQ接入RAG系统，实现用户使用QQ机器人进行问答，如图所示。
 
-  <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/QQBot.jpeg title="QQBot" width=600 height=400>
+  <img src=https://github.com/KANG99/ArXiv-RAG-System/blob/main/images/QQBot.jpeg title="QQBot">
 
   ps：目前只支持文本模式，持续完善图片和语音模式。
 
